@@ -9,7 +9,7 @@ const router = createRouter({
             component: () => import('@/views/Home.vue'),
             children: []
         }, {
-            path: '/search',
+            path: '/poi/search',
             name: 'search',
             component: () => import('@/views/searchPoi.vue'),
             children: []
