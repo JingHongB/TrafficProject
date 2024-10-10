@@ -2,14 +2,18 @@ package com.example.controller;
 
 import com.example.model.RestBean;
 import com.example.model.dto.SearchRequestDTO;
+import com.example.model.entity.BaseLocationEntity;
+import com.example.service.FurnitureFactoryService;
+import com.example.service.LumberyardService;
 import com.example.service.PoiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/poi")
@@ -17,6 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class PoiController {
     @Resource
     private PoiService poiService;
+    @Resource
+    private LumberyardService lumberyardService;
+    @Resource
+    private FurnitureFactoryService furnitureFactoryService;
 
     /**
      * 处理搜索请求，根据前端传递的城市、关键词和页数，通过 poiService 执行搜索。
@@ -32,5 +40,16 @@ public class PoiController {
         } catch (Exception e) {
             return RestBean.failure(500, "搜索失败: " + e.getMessage());
         }
+    }
+
+    @Operation(summary = "获取所有POI数据")
+    @GetMapping("/get")
+    public RestBean<Map<String, List<BaseLocationEntity>>> getAllLumberyards() {
+        List<BaseLocationEntity> lumberyards = lumberyardService.getAllLumberyards();
+        List<BaseLocationEntity> furnitureFactories = furnitureFactoryService.getAllFurnitureFactories();
+        Map<String, List<BaseLocationEntity>> result = new HashMap<>();
+        result.put("lumberyard", lumberyards);
+        result.put("furnitureFactory", furnitureFactories);
+        return RestBean.success(result);
     }
 }

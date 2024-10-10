@@ -14,15 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/lumberyard")
-@Tag(name = "伐木场",description = "伐木场相关操作")
+@Tag(name = "伐木场", description = "伐木场相关操作")
 public class LumberyardController {
-    @Resource
-    private LumberyardService lumberyardService;
 
-    @Operation(summary = "获取伐木场信息")
-    @GetMapping
-    public RestBean<List<Lumberyard>> getAllLumberyards() {
-        List<Lumberyard> lumberyards = lumberyardService.getAllLumberyards();
-        return RestBean.success(lumberyards);
-    }
 }

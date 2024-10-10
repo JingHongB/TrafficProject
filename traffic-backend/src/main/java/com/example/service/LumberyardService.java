@@ -1,6 +1,6 @@
 package com.example.service;
 
-import com.example.model.entity.Lumberyard;
+import com.example.model.entity.BaseLocationEntity;
 
 import java.util.List;
 
@@ -10,5 +10,5 @@ public interface LumberyardService {
      *
      * @return 伐木场列表
      */
-    List<Lumberyard> getAllLumberyards();
+    List<BaseLocationEntity> getAllLumberyards();
 }
