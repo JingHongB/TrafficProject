@@ -56,17 +56,5 @@ const search = () => {
 </template>
 
 <style scoped>
-.el-container {
-  height: 100vh;
-}
 
-.el-header {
-  background-color: #f5f5f5;
-  padding: 20px;
-}
-
-.el-main {
-  padding: 20px;
-  overflow: auto;
-}
 </style>
