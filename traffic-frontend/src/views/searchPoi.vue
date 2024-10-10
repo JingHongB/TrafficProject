@@ -22,6 +22,25 @@ const search = () => {
     }
   });
 };
+
+const exportTxt = () => {
+  if (locations.value.length === 0) {
+    ElMessage.warning('没有数据可导出');
+    return;
+  }
+  let content = 'name,address,longitude,latitude\n';
+  locations.value.forEach(location => {
+    content += `${location.name},${location.address},${location.longitude},${location.latitude}\n`;
+  });
+  const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'exported_data.txt');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 </script>
 
 <template>
@@ -41,6 +60,9 @@ const search = () => {
           <el-col :span="4">
             <el-button type="primary" @click="search">搜索</el-button>
           </el-col>
+          <el-col :span="4">
+            <el-button type="success" @click="exportTxt">导出为TXT</el-button>
+          </el-col>
         </el-row>
       </el-header>
       <el-main>
@@ -56,5 +78,4 @@ const search = () => {
 </template>
 
 <style scoped>
-
 </style>
