@@ -28,7 +28,7 @@ public class LocationFetcherUtils {
     public <T> List<T> fetchLocationData(String keywords, Class<T> clazz) {
         List<T> locations = new ArrayList<>();
         // 设置查询参数
-        URI uri = UriComponentsBuilder.fromHttpUrl(Const.BASE_URL)
+        URI uri = UriComponentsBuilder.fromHttpUrl(Const.AMAP_SEARCH_API)
                 .queryParam("key", Const.API_KEY)
                 .queryParam("keywords", keywords)
                 .queryParam("city", "四川省")
