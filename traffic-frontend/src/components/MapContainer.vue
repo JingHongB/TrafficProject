@@ -21,7 +21,7 @@ onMounted(() => {
           zoom: 10, // 初始化地图级别
           center: [104.066541, 30.572269], // 初始化地图中心点位置
         });
-        loadLumberyardData(AMap);
+        loadPoiData(AMap);
       })
       .catch((e) => {
         console.log(e);
@@ -32,19 +32,34 @@ onUnmounted(() => {
   map?.destroy();
 });
 
-function loadLumberyardData(AMap) {
-  get("/api/lumberyard", (response) => {
-      addMarkers(response, AMap);
+function loadPoiData(AMap) {
+  get("/api/poi/get", (response) => {
+    if (response) {
+      addMarkers(response.lumberyard, AMap, "./src/assets/lumberyard.png");
+      addMarkers(response.furnitureFactory, AMap, "./src/assets/furnitureFactory.png");
+    } else {
+      console.error("获取到的数据为空");
+    }
   });
 }
 
-function addMarkers(lumberyards, AMap) {
-  lumberyards.forEach((lumberyard) => {
+function addMarkers(poiList, AMap, iconUrl) {
+  const icon = new AMap.Icon({
+    image: iconUrl,
+    size: new AMap.Size(30, 30), // 设置图标大小（宽度和高度，单位为像素）
+    imageSize: new AMap.Size(30, 30) // 设置图标的实际显示大小
+  });
+  poiList.forEach((poi) => {
+    if (poi.longitude && poi.latitude) {
       new AMap.Marker({
-        position: [parseFloat(lumberyard.longitude), parseFloat(lumberyard.latitude)], // 确保经纬度是数字类型
+        position: [parseFloat(poi.longitude), parseFloat(poi.latitude)], // 确保经纬度是数字类型
         map: map,
-        title: lumberyard.name,
+        title: poi.name,
+        icon: icon,
       });
+    } else {
+      console.warn(`POI ${poi.name} 的经纬度信息不完整`);
+    }
   });
 }
 
