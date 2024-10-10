@@ -9,7 +9,7 @@ public interface PoiService {
      * @param city    搜索的城市
      * @param keyword 搜索的关键词
      * @param pageNum 页数
-     * @return        搜索结果
+     * @return 搜索结果
      */
     List<?> searchPoi(String city, String keyword, int pageNum);
 }
