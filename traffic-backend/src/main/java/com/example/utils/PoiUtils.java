@@ -1,6 +1,6 @@
 package com.example.utils;
 
-import com.example.model.entity.BaseLocationEntity;
+import com.example.model.BaseLocationEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class PoiUtils {
     /**
      * 将源实体列表映射为目标实体列表。
+     * 用于返回PoiList时将实体类转换为BaseLocationEntity
      *
      * @param sourceList  要映射的源实体列表
      * @param targetClass 目标实体的类

@@ -20,7 +20,7 @@ public record RestBean<T>(int code, T data, String message) {
      * @return 包含成功信息和数据的RestBean实例
      */
     public static <T> RestBean<T> success(T data) {
-        return new RestBean<>(Const.SUCCESS_CODE, data, "请求成功");
+        return new RestBean<>(Const.SUCCESS_CODE, data, Const.SUCCESS_MSG);
     }
 
     /**

@@ -16,14 +16,22 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
     @Resource
     private VehicleMapper vehicleMapper;
 
+    /**
+     * 获取所有车辆
+     *
+     * @return 车辆列表
+     */
     @Override
     public List<Vehicle> getAllVehicles() {
         return list();
     }
 
+    /**
+     * 初始化车辆，暂定数量为5
+     */
     @Override
     public void initializeVehicles() {
-        //截断表
+        //清空车辆表
         vehicleMapper.truncate();
 
         List<Vehicle> vehicles = new ArrayList<>();
@@ -32,10 +40,12 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
         for (int i = 0; i < 5; i++) {
             Vehicle vehicle = new Vehicle();
             vehicle.setStatus("空闲");
+            //车辆大致生成在四川省境内
             vehicle.setLongitude(String.valueOf(97.35 + (108.54 - 97.35) * random.nextDouble()));  // 随机生成经度
             vehicle.setLatitude(String.valueOf(26.05 + (34.31 - 26.05) * random.nextDouble()));    // 随机生成纬度
             vehicles.add(vehicle);
         }
+        //插入数据
         vehicles.forEach(vehicleMapper::insert);
     }
 }

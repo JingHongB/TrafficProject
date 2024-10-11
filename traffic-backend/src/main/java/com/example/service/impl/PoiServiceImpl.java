@@ -3,7 +3,7 @@ package com.example.service.impl;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.example.model.entity.BaseLocationEntity;
+import com.example.model.BaseLocationEntity;
 import com.example.service.PoiService;
 import com.example.utils.Const;
 import jakarta.annotation.Resource;
@@ -20,6 +20,14 @@ public class PoiServiceImpl implements PoiService {
     @Resource
     private RestTemplate restTemplate;
 
+    /**
+     * 使用高德地图 API 搜索地点。
+     *
+     * @param city    搜索的城市
+     * @param keyword 搜索的关键词
+     * @param pageNum 页数
+     * @return 地点信息列表
+     */
     @Override
     public List<BaseLocationEntity> searchPoi(String city, String keyword, int pageNum) {
         List<BaseLocationEntity> locations = new ArrayList<>();

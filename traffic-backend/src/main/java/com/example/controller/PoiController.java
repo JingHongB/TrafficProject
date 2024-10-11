@@ -2,7 +2,7 @@ package com.example.controller;
 
 import com.example.model.RestBean;
 import com.example.model.dto.SearchRequestDTO;
-import com.example.model.entity.BaseLocationEntity;
+import com.example.model.BaseLocationEntity;
 import com.example.service.FurnitureFactoryService;
 import com.example.service.LumberyardService;
 import com.example.service.PoiService;
@@ -42,14 +42,24 @@ public class PoiController {
         }
     }
 
+    /**
+     * 获取所有 POI 数据
+     *
+     * @return 所有 POI 数据封装在 RestBean 中
+     */
     @Operation(summary = "获取所有POI数据")
     @GetMapping("/get")
     public RestBean<Map<String, List<BaseLocationEntity>>> getAllLumberyards() {
-        List<BaseLocationEntity> lumberyards = lumberyardService.getAllLumberyards();
-        List<BaseLocationEntity> furnitureFactories = furnitureFactoryService.getAllFurnitureFactories();
-        Map<String, List<BaseLocationEntity>> result = new HashMap<>();
-        result.put("lumberyard", lumberyards);
-        result.put("furnitureFactory", furnitureFactories);
-        return RestBean.success(result);
+        try {
+            List<BaseLocationEntity> lumberyards = lumberyardService.getAllLumberyards();
+            List<BaseLocationEntity> furnitureFactories = furnitureFactoryService.getAllFurnitureFactories();
+            // 创建结果 Map，将数据存储到 Map 中
+            Map<String, List<BaseLocationEntity>> result = new HashMap<>();
+            result.put("lumberyard", lumberyards);
+            result.put("furnitureFactory", furnitureFactories);
+            return RestBean.success(result);
+        } catch (Exception e) {
+            return RestBean.failure(500, "获取POI数据失败: " + e.getMessage());
+        }
     }
 }

@@ -19,17 +19,37 @@ public class VehicleController {
     @Resource
     private VehicleService vehicleService;
 
+    /**
+     * 初始化车辆信息
+     *
+     * @return 所有车辆信息
+     */
     @Operation(summary = "初始化车辆信息并返回")
     @GetMapping("/init")
     public RestBean<List<Vehicle>> init() {
-        vehicleService.initializeVehicles();
-        return RestBean.success(vehicleService.getAllVehicles());
+        try {
+            vehicleService.initializeVehicles();
+            return RestBean.success(vehicleService.getAllVehicles());
+        } catch (Exception e) {
+            return RestBean.failure(500, "初始化车辆信息失败");
+        }
+
     }
 
+    /**
+     * 获取所有车辆信息
+     *
+     * @return 所有车辆信息
+     */
     @Operation(summary = "获取所有车辆信息")
     @GetMapping
     public RestBean<List<Vehicle>> getAllVehicles() {
-        return RestBean.success(vehicleService.getAllVehicles());
+        try {
+            List<Vehicle> vehicles = vehicleService.getAllVehicles();
+            return RestBean.success(vehicles);
+        } catch (Exception e) {
+            return RestBean.failure(500, "获取车辆信息失败");
+        }
     }
 
 }

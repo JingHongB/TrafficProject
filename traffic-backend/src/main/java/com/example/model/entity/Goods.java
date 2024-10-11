@@ -3,20 +3,19 @@ package com.example.model.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.example.model.BaseLocationEntity;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * 伐木场
- */
-@EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("lumberyard")
+@TableName("goods")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Lumberyard extends BaseLocationEntity {
+public class Goods {
     @TableId(type = IdType.AUTO)
     private Long id;
-
-    private boolean hasGoods;
+    private String type;
+    private String startPoint;
+    private String endPoint;
+    private String status;
 }
