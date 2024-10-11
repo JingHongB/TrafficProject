@@ -32,8 +32,8 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
         for (int i = 0; i < 5; i++) {
             Vehicle vehicle = new Vehicle();
             vehicle.setStatus("空闲");
-            vehicle.setLongitude(String.valueOf(104.06 + random.nextDouble() * 0.2));  // 随机生成经度
-            vehicle.setLatitude(String.valueOf(30.57 + random.nextDouble() * 0.2));    // 随机生成纬度
+            vehicle.setLongitude(String.valueOf(97.35 + (108.54 - 97.35) * random.nextDouble()));  // 随机生成经度
+            vehicle.setLatitude(String.valueOf(26.05 + (34.31 - 26.05) * random.nextDouble()));    // 随机生成纬度
             vehicles.add(vehicle);
         }
         vehicles.forEach(vehicleMapper::insert);
