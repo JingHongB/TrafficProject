@@ -32,7 +32,7 @@ public class PoiController {
      * @param request 包含城市、关键词和页数的请求体
      * @return 搜索结果封装在 RestBean 中
      */
-    @Operation(summary = "根据城市、关键词和页数搜索信息")
+    @Operation(summary = "搜索POI")
     @PostMapping("/search")
     public RestBean<?> search(@RequestBody SearchRequestDTO request) {
         try {
