@@ -175,71 +175,8 @@ const getTaskList = () => {
 // 分配委托并让车辆执行任务
 function assignTask() {
   post('/api/transport/assign', null, () => {
-    taskList.value.forEach((task) => {
-      const vehicleMarker = vehicleMarkers.find(marker => marker.getTitle() === `${task.vehicleId}`);
-      if (vehicleMarker) {
-        moveVehicleAlongTask(vehicleMarker, task);
-      }
-    });
     ElMessage.success('委托分配成功');
   });
-}
-
-// 车辆移动到目标地点
-function moveVehicleAlongTask(marker, task) {
-  const driving = new AMap.Driving({
-    map: map,
-    hideMarkers: true,
-  });
-
-  const start = [parseFloat(task.startLongitude), parseFloat(task.startLatitude)];
-  const end = [parseFloat(task.endLongitude), parseFloat(task.endLatitude)];
-
-  // 设置路径规划的起点和终点
-  driving.search(
-      start,
-      end,
-      (status, result) => {
-        if (status === 'complete' && result.routes && result.routes.length) {
-          const path = [];
-          result.routes[0].steps.forEach(step => {
-            if (step.path) {
-              path.push(...step.path);
-            }
-          });
-
-          const validPath = path.filter(point => point && !isNaN(point.lng) && !isNaN(point.lat));
-
-          if (validPath.length > 0) {
-            // 清除之前的路线
-            routePolylines.forEach(polyline => polyline.setMap(null));
-            routePolylines = [];
-
-            // 创建路线的折线
-            const polyline = new AMap.Polyline({
-              path: validPath,
-              isOutline: true,
-              outlineColor: '#ffeeee',
-              borderWeight: 2,
-              strokeColor: '#0091ff',
-              strokeWeight: 5,
-              map: map,
-            });
-            routePolylines.push(polyline);
-
-            // 使用 moveAlong 方法沿着路径移动
-            marker.moveAlong(validPath, 100, {
-              autoRotation: true,
-              duration: validPath.length * 100,
-            });
-          } else {
-            console.error('路径规划点为空或无效，无法移动车辆');
-          }
-        } else {
-          console.error('路径规划失败：', result);
-        }
-      }
-  );
 }
 
 </script>
