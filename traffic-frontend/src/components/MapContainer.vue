@@ -1,12 +1,14 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
 import AMapLoader from "@amap/amap-jsapi-loader";
-import {get} from "@/net/index.js";
+import {get, post} from "@/net/index.js";
 import {ElMessage} from "element-plus";
 
 let map = null;
-const vehicles = ref([]);
+const goodsList = ref([]);
+const taskList = ref([]);
 let vehicleMarkers = [];
+let routePolylines = [];
 
 //初始化地图
 onMounted(() => {
@@ -32,6 +34,7 @@ onMounted(() => {
       });
 });
 
+//销毁地图
 onUnmounted(() => {
   map?.destroy();
 });
@@ -98,9 +101,8 @@ function addMarkers(poiList, AMap, iconUrl, type) {
 
 //初始化车辆
 function initializeVehicles() {
-  get("/api/vehicle/init", (response) => {
+  post("/api/vehicle/init", null, (response) => {
     if (response) {
-      vehicles.value = response;
       addVehicleMarkers(response);
       ElMessage.success("车辆初始化成功");
     } else {
@@ -121,7 +123,7 @@ function addVehicleMarkers(vehicleList) {
       const marker = new AMap.Marker({
         position: [parseFloat(vehicle.longitude), parseFloat(vehicle.latitude)], // 确保经纬度是数字类型
         map: map,
-        title: vehicle.name,
+        title: `${vehicle.id}`,
         icon: new AMap.Icon({
           image: "./src/assets/vehicle.png",
           size: new AMap.Size(30, 30),
@@ -130,42 +132,106 @@ function addVehicleMarkers(vehicleList) {
         offset: new AMap.Pixel(-15, -30),
       });
       vehicleMarkers.push(marker); // 保存车辆标记到数组中
-      //moveVehicleToTarget(marker, [104.066541, 30.572269], AMap);
     } else {
       ElMessage.error(`车辆 ${vehicle.name} 的经纬度信息不完整`);
     }
   });
 }
 
-//TODO 车辆的移动
-function moveVehicleToTarget(marker, targetPosition, AMap) {
-  // 创建驾车路径规划对象
-  const driving = new AMap.Driving({
-    map: null,
+//创建货物
+const createGoods = () => {
+  post('/api/transport/goods/create', null, () => {
+        ElMessage.success('货物创建成功');
+      }
+  );
+};
+
+//获取货物列表
+const getGoodsList = () => {
+  get('/api/transport/goods', (data) => {
+        goodsList.value = data;
+        ElMessage.success('成功获取货物列表');
+      }
+  );
+};
+
+//创建任务
+const createTask = () => {
+  post('/api/transport/task/create', null, () => {
+        ElMessage.success('委托创建成功');
+      }
+  );
+};
+
+//获取任务列表
+const getTaskList = () => {
+  get('/api/transport/task', (data) => {
+        taskList.value = data;
+        ElMessage.success('成功获取委托列表');
+      }
+  );
+};
+
+// 分配委托并让车辆执行任务
+function assignTask() {
+  post('/api/transport/assign', null, () => {
+    taskList.value.forEach((task) => {
+      const vehicleMarker = vehicleMarkers.find(marker => marker.getTitle() === `${task.vehicleId}`);
+      if (vehicleMarker) {
+        moveVehicleAlongTask(vehicleMarker, task);
+      }
+    });
+    ElMessage.success('委托分配成功');
   });
+}
+
+// 车辆移动到目标地点
+function moveVehicleAlongTask(marker, task) {
+  const driving = new AMap.Driving({
+    map: map,
+    hideMarkers: true,
+  });
+
+  const start = [parseFloat(task.startLongitude), parseFloat(task.startLatitude)];
+  const end = [parseFloat(task.endLongitude), parseFloat(task.endLatitude)];
 
   // 设置路径规划的起点和终点
   driving.search(
-      marker.getPosition(), // 起点
-      targetPosition, // 终点
+      start,
+      end,
       (status, result) => {
         if (status === 'complete' && result.routes && result.routes.length) {
-          // 获取路径规划的路径点
           const path = [];
           result.routes[0].steps.forEach(step => {
-            path.push(...step.path); // 将每个步骤的路径点推入到 path 数组中
+            if (step.path) {
+              path.push(...step.path);
+            }
           });
 
-          // 验证路径点的有效性
-          const validPath = path.filter(point => {
-            return point && !isNaN(point.lng) && !isNaN(point.lat);
-          });
+          const validPath = path.filter(point => point && !isNaN(point.lng) && !isNaN(point.lat));
 
-          // 确保路径点是高德支持的格式：经纬度坐标数组
           if (validPath.length > 0) {
-            console.log('规划的路径点:', validPath);
-            // 使用 AMap 的 moveAlong 方法让标记沿着路径移动
-            marker.moveAlong(validPath, 100); // 每 100ms 移动一次
+            // 清除之前的路线
+            routePolylines.forEach(polyline => polyline.setMap(null));
+            routePolylines = [];
+
+            // 创建路线的折线
+            const polyline = new AMap.Polyline({
+              path: validPath,
+              isOutline: true,
+              outlineColor: '#ffeeee',
+              borderWeight: 2,
+              strokeColor: '#0091ff',
+              strokeWeight: 5,
+              map: map,
+            });
+            routePolylines.push(polyline);
+
+            // 使用 moveAlong 方法沿着路径移动
+            marker.moveAlong(validPath, 100, {
+              autoRotation: true,
+              duration: validPath.length * 100,
+            });
           } else {
             console.error('路径规划点为空或无效，无法移动车辆');
           }
@@ -182,6 +248,38 @@ function moveVehicleToTarget(marker, targetPosition, AMap) {
   <div id="container">
     <div class="button-container">
       <el-button type="primary" @click="initializeVehicles">初始化车辆</el-button>
+      <el-button type="primary" @click="createGoods">创建货物</el-button>
+      <el-button type="success" @click="getGoodsList">获取货物列表</el-button>
+      <el-button type="primary" @click="createTask">创建委托</el-button>
+      <el-button type="success" @click="getTaskList">获取委托列表</el-button>
+      <el-button type="success" @click="assignTask">分配委托</el-button>
+    </div>
+    <div>
+      <el-container class="fixed-sidebar">
+        <el-main>
+          <!-- 货物列表展示 -->
+          <el-card v-if="goodsList.length" class="box-card" header="货物列表">
+            <el-table :data="goodsList" style="width: 100%">
+              <el-table-column prop="id" label="ID" width="50"></el-table-column>
+              <el-table-column prop="type" label="类型" width="150"></el-table-column>
+              <el-table-column prop="startPoint" label="起点" width="150"></el-table-column>
+              <el-table-column prop="endPoint" label="终点" width="150"></el-table-column>
+              <el-table-column prop="status" label="状态" width="100"></el-table-column>
+            </el-table>
+          </el-card>
+          <!-- 委托列表展示 -->
+          <el-card v-if="taskList.length" class="box-card" header="委托列表">
+            <el-table :data="taskList" style="width: 100%">
+              <el-table-column prop="id" label="ID" width="50"></el-table-column>
+              <el-table-column prop="goodsId" label="货物ID" width="100"></el-table-column>
+              <el-table-column prop="vehicleId" label="车辆ID" width="100"></el-table-column>
+              <el-table-column prop="startPoint" label="起始地点" width="150"></el-table-column>
+              <el-table-column prop="endPoint" label="目的地" width="150"></el-table-column>
+              <el-table-column prop="status" label="状态" width="100"></el-table-column>
+            </el-table>
+          </el-card>
+        </el-main>
+      </el-container>
     </div>
   </div>
 </template>
@@ -206,4 +304,18 @@ function moveVehicleToTarget(marker, targetPosition, AMap) {
   flex-direction: column;
   gap: 10px;
 }
+
+.fixed-sidebar {
+  position: fixed; /* 使其固定位置 */
+  top: 20px; /* 距离页面顶部的距离，可以根据需要调整 */
+  right: 20px; /* 距离页面右侧的距离 */
+  width: 350px; /* 侧边栏的宽度 */
+  max-height: 90vh; /* 最大高度为视口高度的 90% */
+  overflow-y: auto; /* 当内容超出高度时，滚动显示 */
+  background: #fff; /* 背景颜色 */
+  padding: 10px; /* 内边距 */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+  z-index: 1000; /* 确保侧边栏在最上层 */
+}
+
 </style>
