@@ -172,7 +172,7 @@ const getTaskList = () => {
   );
 };
 
-// 分配委托并让车辆执行任务
+// 分配委托
 function assignTask() {
   post('/api/transport/assign', null, () => {
     ElMessage.success('委托分配成功');
