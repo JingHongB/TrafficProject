@@ -41,12 +41,32 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
                 goods.setType("木材");
                 goods.setStartPoint(lumberyard.getName());
                 goods.setEndPoint(furnitureFactories.get(random.nextInt(furnitureFactories.size())).getName());
-                goods.setStatus("待装载");
+                goods.setStatus("待委托");
                 goodsMapper.insert(goods);
                 //更新伐木场状态
                 lumberyard.setHasGoods(true);
                 lumberyardService.updateById(lumberyard);
             }
         }
+    }
+
+    /**
+     * 获取未分配货物
+     *
+     * @return 未分配货物列表
+     */
+    @Override
+    public List<Goods> getUnassignedGoods() {
+        return lambdaQuery().eq(Goods::getStatus, "待委托").list();
+    }
+
+    /**
+     * 获取所有货物
+     *
+     * @return 所有货物列表
+     */
+    @Override
+    public List<Goods> getAllGoods() {
+        return list();
     }
 }

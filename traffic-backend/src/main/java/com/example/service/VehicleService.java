@@ -17,4 +17,11 @@ public interface VehicleService extends IService<Vehicle> {
      * 初始化车辆信息
      */
     void initializeVehicles();
+
+    /**
+     * 获取未分配任务的车辆
+     *
+     * @return 未分配任务的车辆列表
+     */
+    List<Vehicle> getUnassignedVehicles();
 }

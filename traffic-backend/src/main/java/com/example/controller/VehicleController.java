@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +26,7 @@ public class VehicleController {
      * @return 所有车辆信息
      */
     @Operation(summary = "初始化车辆信息并返回")
-    @GetMapping("/init")
+    @PostMapping("/init")
     public RestBean<List<Vehicle>> init() {
         try {
             vehicleService.initializeVehicles();
