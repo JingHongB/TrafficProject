@@ -20,5 +20,6 @@ public class Goods {
     private Long ownerId;
 
     private Double weight;
+    //默认设置为待委托
     private String status;
 }

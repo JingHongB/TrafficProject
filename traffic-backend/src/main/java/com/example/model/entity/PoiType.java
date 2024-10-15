@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class PoiType {
     @TableId
     private Long id;
+    private Long GoodsTypeId;
 
     private String name;
     private String fatherNode;

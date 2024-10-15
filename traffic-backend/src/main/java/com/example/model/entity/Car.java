@@ -20,5 +20,6 @@ public class Car {
 
     private Double longitude;
     private Double latitude;
+    //默认设置为空闲
     private String status;
 }

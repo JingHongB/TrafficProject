@@ -22,5 +22,6 @@ public class Poi {
     private String address;
     private Double longitude;
     private Double latitude;
+    //默认设置为缺货
     private String status;
 }
