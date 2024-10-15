@@ -11,17 +11,17 @@ public interface CarService extends IService<Car> {
      *
      * @return 车辆信息列表
      */
-    List<Car> getAllVehicles();
+    List<Car> getAllCars();
 
     /**
      * 初始化车辆信息
      */
-    void initializeVehicles();
+    void initializeCars();
 
     /**
      * 获取未分配任务的车辆
      *
      * @return 未分配任务的车辆列表
      */
-    List<Car> getUnassignedVehicles();
+    List<Car> getUnassignedCars();
 }
