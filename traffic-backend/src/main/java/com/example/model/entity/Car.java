@@ -7,18 +7,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 货物
+ * 车辆
  */
 @Data
-@TableName("goods")
+@TableName("car")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Goods {
+public class Car {
     @TableId
     private Long id;
     private Long typeId;
-    private Long ownerId;
 
-    private Double weight;
+    private Double longitude;
+    private Double latitude;
     private String status;
 }

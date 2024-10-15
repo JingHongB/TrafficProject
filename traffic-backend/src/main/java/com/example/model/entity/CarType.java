@@ -1,6 +1,5 @@
 package com.example.model.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -8,16 +7,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 车辆
+ * 车辆类型
  */
 @Data
-@TableName("vehicle")
+@TableName("car_type")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Vehicle {
-    @TableId(type = IdType.AUTO)
+public class CarType {
+    @TableId
     private Long id;
-    private String longitude;
-    private String latitude;
-    private String status;
+
+    private String name;
+    private Double load;
 }

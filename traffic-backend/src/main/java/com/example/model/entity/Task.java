@@ -7,16 +7,21 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 任务
+ */
 @Data
 @TableName("task")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Task {
-    @TableId(type = IdType.AUTO)
+    @TableId
     private Long id;
-    private Long vehicleId;
+    private Long CarId;
     private Long goodsId;
-    private String startPoint;
-    private String endPoint;
+    private Long startId;
+    private Long endId;
+
+    private Double distance;
     private String status;
 }
