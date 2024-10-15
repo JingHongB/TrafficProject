@@ -1,5 +1,6 @@
 package com.example.controller;
 
+
 import com.example.model.RestBean;
 import com.example.model.dto.SearchRequestDTO;
 import com.example.model.BaseLocationEntity;

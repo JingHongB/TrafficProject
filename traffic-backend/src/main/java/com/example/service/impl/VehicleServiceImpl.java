@@ -27,8 +27,9 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
     }
 
     /**
-     * 初始化车辆，暂定数量为5
+     * 初始化车辆
      */
+    //TODO: 扩展车辆类型、数量
     @Override
     public void initializeVehicles() {
         //清空车辆表
@@ -37,7 +38,7 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
         List<Vehicle> vehicles = new ArrayList<>();
         Random random = new Random();
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 1; i++) {
             Vehicle vehicle = new Vehicle();
             vehicle.setStatus("空闲");
             //车辆大致生成在四川省境内
@@ -47,5 +48,10 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
         }
         //插入数据
         vehicles.forEach(vehicleMapper::insert);
+    }
+
+    @Override
+    public List<Vehicle> getUnassignedVehicles() {
+        return lambdaQuery().eq(Vehicle::getStatus, "空闲").list();
     }
 }

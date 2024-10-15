@@ -13,4 +13,13 @@ public interface LumberyardService extends IService<Lumberyard> {
      * @return 伐木场列表
      */
     List<BaseLocationEntity> getAllLumberyards();
+
+    /**
+     * 根据名称获取伐木场信息。
+     *
+     * @param name 伐木场名称
+     * @return 伐木场信息
+     */
+    //TODO 从伐木场延申到所有类型的地点
+    Lumberyard getLumberyardByName(String name);
 }

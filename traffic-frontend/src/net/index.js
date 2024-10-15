@@ -14,7 +14,7 @@ const defaultError = (err) => {
 }
 
 //封装post请求
-function internalPost(url, data, success, failure, error) {
+function internalPost(url, data, success, failure) {
     axios.post(url, data).then(({data}) => {
         if (data.code === 200) {
             success(data.data);
@@ -25,7 +25,7 @@ function internalPost(url, data, success, failure, error) {
 }
 
 //封装get请求
-function internalGet(url, success, failure, error) {
+function internalGet(url, success, failure) {
     axios.get(url).then(({data}) => {
         if (data.code === 200) {
             success(data.data);
