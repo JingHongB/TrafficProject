@@ -1,8 +1,11 @@
 package com.example.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.model.entity.Poi;
+
 import java.util.List;
 
-public interface PoiService {
+public interface PoiService extends IService<Poi> {
     /**
      * 根据城市、关键词和页数，通过高德API进行搜索。
      *
