@@ -2,12 +2,12 @@ package com.example.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.GoodsMapper;
-import com.example.model.entity.FurnitureFactory;
+import com.example.mapper.PoiTypeMapper;
 import com.example.model.entity.Goods;
-import com.example.model.entity.Lumberyard;
-import com.example.service.FurnitureFactoryService;
+import com.example.model.entity.Poi;
 import com.example.service.GoodsService;
-import com.example.service.LumberyardService;
+import com.example.service.PoiService;
+import com.example.service.PoiTypeService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -17,37 +17,33 @@ import java.util.Random;
 @Service
 public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements GoodsService {
     @Resource
-    private GoodsMapper goodsMapper;
-
+    private GoodsService goodsService;
     @Resource
-    LumberyardService lumberyardService;
-
+    private PoiService poiService;
     @Resource
-    FurnitureFactoryService furnitureFactoryService;
+    private PoiTypeService poiTypeService;
 
     private final Random random = new Random();
 
     /**
      * 创建货物
      */
-    //TODO: 扩展成创建各种类型的货物
     @Override
     public void createGoods() {
-        List<Lumberyard> lumberyards = lumberyardService.list();
-        List<FurnitureFactory> furnitureFactories = furnitureFactoryService.list();
-        for (Lumberyard lumberyard : lumberyards) {
-            if (!lumberyard.isHasGoods()) {
-                Goods goods = new Goods();
-                goods.setType("木材");
-                goods.setStartPoint(lumberyard.getName());
-                goods.setEndPoint(furnitureFactories.get(random.nextInt(furnitureFactories.size())).getName());
-                goods.setStatus("待委托");
-                goodsMapper.insert(goods);
-                //更新伐木场状态
-                lumberyard.setHasGoods(true);
-                lumberyardService.updateById(lumberyard);
-            }
-        }
+        List<Poi> pois = poiService.getLackOfGoodsFactories();
+//        for (Poi poi : pois) {
+//            if (poi.getStatus().equals("缺货")) {
+//                Goods goods = new Goods();
+//                goods.setType("木材");
+//                goods.setStartPoint(poi.getName());
+//                goods.setEndPoint(furnitureFactories.get(random.nextInt(furnitureFactories.size())).getName());
+//                goods.setStatus("待委托");
+//                goodsMapper.insert(goods);
+//                //更新伐木场状态
+//                poi.setHasGoods(true);
+//                lumberyardService.updateById(poi);
+//            }
+//        }
     }
 
     /**
