@@ -45,7 +45,7 @@ public class PoiController {
      *
      * @return 所有 POI 数据封装在 RestBean 中
      */
-    @Operation(summary = "获取所有POI数据")
+    @Operation(summary = "获取POI")
     @GetMapping("/get")
     public RestBean<List<PoiVO>> getAllLumberyards() {
         try {

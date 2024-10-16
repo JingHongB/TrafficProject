@@ -27,7 +27,7 @@ public class CarController {
      *
      * @return void
      */
-    @Operation(summary = "初始化车辆信息")
+    @Operation(summary = "初始化车辆")
     @PostMapping("/init")
     public RestBean<Void> init() {
         try {
@@ -45,7 +45,7 @@ public class CarController {
      *
      * @return 所有车辆信息
      */
-    @Operation(summary = "获取所有车辆信息")
+    @Operation(summary = "获取车辆")
     @GetMapping
     public RestBean<List<CarVO>> getAllVehicles() {
         try {
