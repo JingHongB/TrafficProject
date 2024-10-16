@@ -1,27 +1,28 @@
 package com.example.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.GoodsMapper;
-import com.example.mapper.PoiTypeMapper;
 import com.example.model.entity.Goods;
-import com.example.model.entity.Poi;
+import com.example.model.entity.GoodsType;
+import com.example.model.entity.PoiType;
 import com.example.service.GoodsService;
+import com.example.service.GoodsTypeService;
 import com.example.service.PoiService;
 import com.example.service.PoiTypeService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Random;
 
 @Service
 public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements GoodsService {
     @Resource
-    private GoodsService goodsService;
-    @Resource
     private PoiService poiService;
     @Resource
     private PoiTypeService poiTypeService;
+    @Resource
+    private GoodsTypeService goodsTypeService;
 
     private final Random random = new Random();
 
@@ -30,39 +31,23 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
      */
     @Override
     public void createGoods() {
-        List<Poi> pois = poiService.getLackOfGoodsFactories();
-//        for (Poi poi : pois) {
-//            if (poi.getStatus().equals("缺货")) {
-//                Goods goods = new Goods();
-//                goods.setType("木材");
-//                goods.setStartPoint(poi.getName());
-//                goods.setEndPoint(furnitureFactories.get(random.nextInt(furnitureFactories.size())).getName());
-//                goods.setStatus("待委托");
-//                goodsMapper.insert(goods);
-//                //更新伐木场状态
-//                poi.setHasGoods(true);
-//                lumberyardService.updateById(poi);
-//            }
-//        }
-    }
-
-    /**
-     * 获取未分配货物
-     *
-     * @return 未分配货物列表
-     */
-    @Override
-    public List<Goods> getUnassignedGoods() {
-        return lambdaQuery().eq(Goods::getStatus, "待委托").list();
-    }
-
-    /**
-     * 获取所有货物
-     *
-     * @return 所有货物列表
-     */
-    @Override
-    public List<Goods> getAllGoods() {
-        return list();
+        //只在缺货的一级工厂生成货物
+        poiService.query().eq("status", "缺货").list().forEach(poi -> {
+            PoiType poiType = poiTypeService.getById(poi.getTypeId());
+            if (poiType != null && poiType.getFatherNode() == null) {
+                Goods goods = new Goods();
+                goods.setId(IdUtil.getSnowflakeNextId());
+                goods.setTypeId(poiType.getGoodsTypeId());
+                goods.setOwnerId(poi.getId());
+                GoodsType goodsType = goodsTypeService.getById(goods.getTypeId());
+                //随机生成重量
+                double weight = goodsType.getMinWeight() +
+                        (goodsType.getMaxWeight() - goodsType.getMinWeight()) * random.nextDouble();
+                weight = Math.round(weight * 10.0) / 10.0;
+                goods.setWeight(weight);
+                save(goods);
+                poiService.update().set("status", "有货").eq("id", poi.getId()).update();
+            }
+        });
     }
 }
