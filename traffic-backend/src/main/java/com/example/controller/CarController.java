@@ -1,8 +1,8 @@
 package com.example.controller;
 
 import com.example.model.RestBean;
-import com.example.model.entity.Vehicle;
-import com.example.service.VehicleService;
+import com.example.model.entity.Car;
+import com.example.service.CarService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -16,9 +16,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/vehicle")
 @Tag(name = "车辆", description = "车辆相关操作")
-public class VehicleController {
+public class CarController {
     @Resource
-    private VehicleService vehicleService;
+    private CarService vehicleService;
 
     /**
      * 初始化车辆信息
@@ -27,10 +27,10 @@ public class VehicleController {
      */
     @Operation(summary = "初始化车辆信息并返回")
     @PostMapping("/init")
-    public RestBean<List<Vehicle>> init() {
+    public RestBean<List<Car>> init() {
         try {
-            vehicleService.initializeVehicles();
-            return RestBean.success(vehicleService.getAllVehicles());
+            vehicleService.initializeCars();
+            return RestBean.success(vehicleService.getAllCars());
         } catch (Exception e) {
             return RestBean.failure(500, "初始化车辆信息失败");
         }
@@ -44,10 +44,10 @@ public class VehicleController {
      */
     @Operation(summary = "获取所有车辆信息")
     @GetMapping
-    public RestBean<List<Vehicle>> getAllVehicles() {
+    public RestBean<List<Car>> getAllVehicles() {
         try {
-            List<Vehicle> vehicles = vehicleService.getAllVehicles();
-            return RestBean.success(vehicles);
+            List<Car> cars = vehicleService.getAllCars();
+            return RestBean.success(cars);
         } catch (Exception e) {
             return RestBean.failure(500, "获取车辆信息失败");
         }
