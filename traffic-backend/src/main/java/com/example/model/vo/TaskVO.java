@@ -4,17 +4,18 @@ import lombok.Data;
 
 @Data
 public class TaskVO {
-    private Long id;
-    private Long vehicleId;
-    private Long goodsId;
-    private String startPoint;
-    private String endPoint;
+    private String id;
+    private String CarId;
+    private Double distance;
     private String status;
 
-    private String startLongitude;
-    private String startLatitude;
-    private String endLongitude;
-    private String endLatitude;
-    private String vehicleLongitude;
-    private String vehicleLatitude;
+    private String goods;
+    private String startPoint;
+    private String endPoint;
+    private Double startLongitude;
+    private Double startLatitude;
+    private Double endLongitude;
+    private Double endLatitude;
+    private Double CarLongitude;
+    private Double CarLatitude;
 }

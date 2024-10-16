@@ -13,29 +13,15 @@ public interface TaskService extends IService<Task> {
     void createTask();
 
     /**
-     * 获取所有委托
-     *
-     * @return 委托列表
-     */
-    List<Task> getAllTasks();
-
-    /**
-     * 获取没有分配的委托
-     *
-     * @return 任务列表
-     */
-    List<Task> getUnassignedTasks();
-
-    /**
      * 分配委托
      */
     void assignTask();
 
     /**
-     * 将Task对象转换为TaskVO对象
+     * 将Task对象列表转换为TaskVO对象列表
      *
-     * @param task Task对象
+     * @param tasks Task对象列表
      * @return TaskVO对象列表
      */
-    TaskVO convertToTaskVO(Task task);
+    List<TaskVO> convertToTaskVO(List<Task> tasks);
 }

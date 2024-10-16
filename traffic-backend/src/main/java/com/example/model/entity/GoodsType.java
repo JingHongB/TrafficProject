@@ -20,7 +20,7 @@ public class GoodsType {
     private String name;
     private Double maxWeight;
     private Double minWeight;
-    private String fatherNode;
-    private String childNode;
+    private Long fatherNode;
+    private Long childNode;
     private Long time;
 }

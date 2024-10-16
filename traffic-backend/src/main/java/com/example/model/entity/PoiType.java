@@ -19,6 +19,6 @@ public class PoiType {
     private Long GoodsTypeId;
 
     private String name;
-    private String fatherNode;
-    private String childNode;
+    private Long fatherNode;
+    private Long childNode;
 }

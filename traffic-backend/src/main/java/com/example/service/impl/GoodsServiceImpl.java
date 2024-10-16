@@ -6,16 +6,22 @@ import com.example.mapper.GoodsMapper;
 import com.example.model.entity.Goods;
 import com.example.model.entity.GoodsType;
 import com.example.model.entity.PoiType;
+import com.example.model.vo.GoodsVO;
 import com.example.service.GoodsService;
 import com.example.service.GoodsTypeService;
 import com.example.service.PoiService;
 import com.example.service.PoiTypeService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Service
+@Slf4j
 public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements GoodsService {
     @Resource
     private PoiService poiService;
@@ -49,5 +55,25 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
                 poiService.update().set("status", "有货").eq("id", poi.getId()).update();
             }
         });
+        log.info("成功生成货物");
+    }
+
+    /**
+     * Goods列表转换为GoodsVO列表
+     *
+     * @param goodsList Goods列表
+     * @return GoodsVO列表
+     */
+    @Override
+    public List<GoodsVO> convertToVO(List<Goods> goodsList) {
+        List<GoodsVO> goodsVOList = new ArrayList<>();
+        goodsList.forEach(goods -> {
+            GoodsVO goodsVO = new GoodsVO();
+            BeanUtils.copyProperties(goods, goodsVO);
+            goodsVO.setType(goodsTypeService.getById(goods.getTypeId()).getName());
+            goodsVO.setOwner(poiService.getById(goods.getOwnerId()).getName());
+            goodsVOList.add(goodsVO);
+        });
+        return goodsVOList;
     }
 }

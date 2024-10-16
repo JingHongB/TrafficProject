@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.model.RestBean;
 import com.example.model.entity.Goods;
 import com.example.model.entity.Task;
+import com.example.model.vo.GoodsVO;
 import com.example.model.vo.TaskVO;
 import com.example.service.GoodsService;
 import com.example.service.TaskService;
@@ -28,16 +29,12 @@ public class TransportController {
     @Resource
     private GoodsService goodsService;
 
-    @Operation(summary = "获取所有委托信息")
+    @Operation(summary = "获取委托")
     @GetMapping("/task")
     public RestBean<List<TaskVO>> getTaskList() {
         try {
-            List<Task> tasks = taskService.getAllTasks();
-            List<TaskVO> taskVOList = tasks.stream()
-                    .map(taskService::convertToTaskVO)
-                    .collect(Collectors.toList());
-
-            return RestBean.success(taskVOList);
+            List<Task> tasks = taskService.list();
+            return RestBean.success(taskService.convertToTaskVO(tasks));
         } catch (Exception e) {
             log.info("获取委托失败", e);
             return RestBean.failure(500, "获取委托失败");
@@ -51,17 +48,19 @@ public class TransportController {
             taskService.createTask();
             return RestBean.success();
         } catch (Exception e) {
+            log.error("创建委托失败", e);
             return RestBean.failure(500, "创建委托失败");
         }
     }
 
-    @Operation(summary = "获取所有货物信息")
+    @Operation(summary = "获取货物")
     @GetMapping("/goods")
-    public RestBean<List<Goods>> getGoodsList() {
+    public RestBean<List<GoodsVO>> getGoodsList() {
         try {
-            List<com.example.model.entity.Goods> goods = goodsService.getAllGoods();
-            return RestBean.success(goods);
+            List<Goods> goodsList = goodsService.list();
+            return RestBean.success(goodsService.convertToVO(goodsList));
         } catch (Exception e) {
+            log.error("获取货物失败", e);
             return RestBean.failure(500, "获取货物失败");
         }
     }
@@ -73,11 +72,12 @@ public class TransportController {
             goodsService.createGoods();
             return RestBean.success();
         } catch (Exception e) {
+            log.error("创建货物失败", e);
             return RestBean.failure(500, "创建货物失败");
         }
     }
 
-    @Operation(summary = "分配委托给车辆")
+    @Operation(summary = "分配委托")
     @PostMapping("/assign")
     public RestBean<Void> assignTask() {
         try {
