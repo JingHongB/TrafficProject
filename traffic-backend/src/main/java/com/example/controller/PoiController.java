@@ -2,13 +2,14 @@ package com.example.controller;
 
 import com.example.model.RestBean;
 import com.example.model.dto.SearchRequestDTO;
-import com.example.model.BaseLocationEntity;
-import com.example.service.FurnitureFactoryService;
-import com.example.service.LumberyardService;
+import com.example.model.entity.Poi;
+import com.example.model.vo.PoiSearchVO;
+import com.example.model.vo.PoiVO;
 import com.example.service.PoiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -18,13 +19,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/poi")
 @Tag(name = "Poi", description = "Poi相关操作")
+@Slf4j
 public class PoiController {
     @Resource
     private PoiService poiService;
-    @Resource
-    private LumberyardService lumberyardService;
-    @Resource
-    private FurnitureFactoryService furnitureFactoryService;
 
     /**
      * 处理搜索请求，根据前端传递的城市、关键词和页数，通过 poiService 执行搜索。
@@ -34,10 +32,12 @@ public class PoiController {
      */
     @Operation(summary = "搜索POI")
     @PostMapping("/search")
-    public RestBean<?> search(@RequestBody SearchRequestDTO request) {
+    public RestBean<List<PoiSearchVO>> search(@RequestBody SearchRequestDTO request) {
         try {
-            return RestBean.success(poiService.searchPoi(request.getCity(), request.getKeyword(), request.getPageNum()));
+            List<Poi> pois = poiService.searchPoi(request.getCity(), request.getKeyword(), request.getPageNum());
+            return RestBean.success(poiService.PoiConvertToPoiSearchVO(pois));
         } catch (Exception e) {
+            log.error("搜索Poi失败", e);
             return RestBean.failure(500, "搜索失败: " + e.getMessage());
         }
     }
@@ -49,16 +49,12 @@ public class PoiController {
      */
     @Operation(summary = "获取所有POI数据")
     @GetMapping("/get")
-    public RestBean<Map<String, List<BaseLocationEntity>>> getAllLumberyards() {
+    public RestBean<List<PoiVO>> getAllLumberyards() {
         try {
-            List<BaseLocationEntity> lumberyards = lumberyardService.getAllLumberyards();
-            List<BaseLocationEntity> furnitureFactories = furnitureFactoryService.getAllFurnitureFactories();
-            // 创建结果 Map，将数据存储到 Map 中
-            Map<String, List<BaseLocationEntity>> result = new HashMap<>();
-            result.put("lumberyard", lumberyards);
-            result.put("furnitureFactory", furnitureFactories);
-            return RestBean.success(result);
+            List<Poi> pois = poiService.list();
+            return RestBean.success(poiService.PoiConvertToPoiVO(pois));
         } catch (Exception e) {
+            log.error("获取POI数据失败", e);
             return RestBean.failure(500, "获取POI数据失败: " + e.getMessage());
         }
     }

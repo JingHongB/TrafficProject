@@ -2,6 +2,8 @@ package com.example.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.model.entity.Poi;
+import com.example.model.vo.PoiSearchVO;
+import com.example.model.vo.PoiVO;
 
 import java.util.List;
 
@@ -14,5 +16,21 @@ public interface PoiService extends IService<Poi> {
      * @param pageNum 页数
      * @return 搜索结果
      */
-    List<?> searchPoi(String city, String keyword, int pageNum);
+    List<Poi> searchPoi(String city, String keyword, int pageNum);
+
+    /**
+     * 将Poi转换为PoiSearchVO
+     *
+     * @param poiList poi列表
+     * @return PoiSearchVO列表
+     */
+    List<PoiSearchVO> PoiConvertToPoiSearchVO(List<Poi> poiList);
+
+    /**
+     * 将Poi转换为PoiVO
+     *
+     * @param poiList poi列表
+     * @return PoiVO列表
+     */
+    List<PoiVO> PoiConvertToPoiVO(List<Poi> poiList);
 }
