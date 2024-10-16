@@ -64,15 +64,4 @@ public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements CarSe
         this.saveBatch(cars);
         log.info("车辆信息初始化完成");
     }
-
-    /**
-     * 获取空闲车辆
-     *
-     * @return 空闲的车辆列表
-     */
-    @Override
-    public List<Car> getUnassignedCars() {
-        log.info("获取空闲车辆");
-        return this.query().eq("status", "空闲").list();
-    }
 }
