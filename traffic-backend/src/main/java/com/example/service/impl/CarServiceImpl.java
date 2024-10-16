@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.CarMapper;
 import com.example.model.entity.Car;
+import com.example.model.vo.CarVO;
 import com.example.service.CarService;
 import com.example.service.CarTypeService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,17 +23,6 @@ import java.util.Random;
 public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements CarService {
     @Resource
     private CarTypeService carTypeService;
-
-    /**
-     * 获取所有车辆
-     *
-     * @return 车辆列表
-     */
-    @Override
-    public List<Car> getAllCars() {
-        log.info("获取车辆信息");
-        return list();
-    }
 
     /**
      * 初始化车辆
@@ -63,5 +54,35 @@ public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements CarSe
         //插入数据
         this.saveBatch(cars);
         log.info("车辆信息初始化完成");
+    }
+
+    /**
+     * 获取CarVO列表
+     *
+     * @return CarVO列表
+     */
+    @Override
+    public List<CarVO> getCarVOList() {
+        List<Car> cars = list();
+        List<CarVO> carVOS = new ArrayList<>();
+        for (Car car : cars) {
+            carVOS.add(convertToCarVO(car));
+        }
+        return carVOS;
+    }
+
+    /**
+     * 将Car转换为CarVO
+     *
+     * @param car 车辆信息
+     * @return 车辆VO信息
+     */
+    private CarVO convertToCarVO(Car car) {
+        CarVO carVO = new CarVO();
+        BeanUtils.copyProperties(car, carVO);
+
+        carVO.setTypeName(carTypeService.getById(car.getTypeId()).getName());
+        carVO.setLoadCapacity(carTypeService.getById(car.getTypeId()).getLoadCapacity());
+        return carVO;
     }
 }

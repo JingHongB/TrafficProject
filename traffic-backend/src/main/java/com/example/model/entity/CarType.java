@@ -18,5 +18,5 @@ public class CarType {
     private Long id;
 
     private String name;
-    private Double load;
+    private Double loadCapacity;
 }
