@@ -35,7 +35,7 @@ public class CarController {
             return RestBean.success();
         } catch (Exception e) {
             log.error("初始化车辆信息失败", e);
-            return RestBean.failure(500, "初始化车辆信息失败");
+            return RestBean.failure(500, "初始化车辆信息失败" + e.getMessage());
         }
 
     }
@@ -52,7 +52,7 @@ public class CarController {
             return RestBean.success(carService.getCarVOList());
         } catch (Exception e) {
             log.error("获取车辆信息失败", e);
-            return RestBean.failure(500, "获取车辆信息失败");
+            return RestBean.failure(500, "获取车辆信息失败" + e.getMessage());
         }
     }
 
