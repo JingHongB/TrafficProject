@@ -28,7 +28,7 @@ public class PoiController {
      * @param request 包含城市、关键词和页数的请求体
      * @return 搜索结果封装在 RestBean 中
      */
-    @Operation(summary = "搜索POI")
+    @Operation(summary = "搜索Poi")
     @PostMapping("/search")
     public RestBean<List<PoiSearchVO>> search(@RequestBody SearchRequestDTO request) {
         try {
@@ -45,7 +45,7 @@ public class PoiController {
      *
      * @return 所有 POI 数据封装在 RestBean 中
      */
-    @Operation(summary = "获取POI")
+    @Operation(summary = "获取Poi")
     @GetMapping("/get")
     public RestBean<List<PoiVO>> getAllLumberyards() {
         try {

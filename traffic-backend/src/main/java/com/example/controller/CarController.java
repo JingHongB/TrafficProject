@@ -25,7 +25,7 @@ public class CarController {
     /**
      * 初始化车辆信息
      *
-     * @return void
+     * @return Void
      */
     @Operation(summary = "初始化车辆")
     @PostMapping("/init")
@@ -37,7 +37,6 @@ public class CarController {
             log.error("初始化车辆信息失败", e);
             return RestBean.failure(500, "初始化车辆信息失败" + e.getMessage());
         }
-
     }
 
     /**

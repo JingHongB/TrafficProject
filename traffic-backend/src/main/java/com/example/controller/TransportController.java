@@ -83,6 +83,7 @@ public class TransportController {
             taskService.assignTask();
             return RestBean.success();
         } catch (Exception e) {
+            log.error("分配委托失败", e);
             return RestBean.failure(500, "分配委托失败");
         }
     }
