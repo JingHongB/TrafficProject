@@ -4,9 +4,11 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.PoiMapper;
 import com.example.model.entity.Poi;
+import com.example.model.entity.PoiType;
 import com.example.model.vo.PoiSearchVO;
 import com.example.model.vo.PoiVO;
 import com.example.service.PoiService;
@@ -54,7 +56,7 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
         // 发起 GET 请求
         String response = restTemplate.getForObject(uri, String.class);
         if (response != null) {
-            locations.addAll(parseLocationData(response));
+            locations.addAll(parseLocationData(response, keyword));
         }
         return locations;
     }
@@ -71,6 +73,7 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
         for (Poi poi : poiList) {
             PoiSearchVO poiSearchVO = new PoiSearchVO();
             BeanUtils.copyProperties(poi, poiSearchVO);
+            poiSearchVO.setId(String.valueOf(poi.getId()));
             poiSearchVOList.add(poiSearchVO);
         }
         return poiSearchVOList;
@@ -100,7 +103,7 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
      * @param jsonResponse 高德地图API的JSON响应
      * @return 地点信息列表
      */
-    private List<Poi> parseLocationData(String jsonResponse) {
+    private List<Poi> parseLocationData(String jsonResponse, String keyword) {
         List<Poi> locations = new ArrayList<>();
         JSONObject jsonObject = JSON.parseObject(jsonResponse);
         if ("1".equals(jsonObject.getString("status"))) {
@@ -110,6 +113,12 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
                 try {
                     Poi entity = new Poi();
                     entity.setId(IdUtil.getSnowflakeNextId());
+                    QueryWrapper<PoiType> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("name", keyword);
+                    //如果查询的类型存在，则设置类型ID
+                    if (poiTypeService.getOne(queryWrapper) != null) {
+                        entity.setTypeId(poiTypeService.getOne(queryWrapper).getId());
+                    }
                     entity.setName(poi.getString("name"));
                     entity.setAddress(poi.getString("address"));
                     String[] coordinates = poi.getString("location").split(",");

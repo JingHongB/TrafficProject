@@ -2,57 +2,51 @@ package com.example.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.mapper.FurnitureFactoryMapper;
+import com.example.mapper.CarMapper;
 import com.example.mapper.TaskMapper;
-import com.example.mapper.VehicleMapper;
-import com.example.model.entity.Goods;
 import com.example.model.entity.Task;
-import com.example.model.entity.Vehicle;
 import com.example.model.vo.TaskVO;
-import com.example.service.*;
+import com.example.service.CarService;
+import com.example.service.GoodsService;
+import com.example.service.TaskService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Service
+//TODO: 修改
 public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements TaskService {
     @Resource
     private GoodsService goodsService;
     @Resource
-    private VehicleService vehicleService;
+    private CarService vehicleService;
     @Resource
     private TaskMapper taskMapper;
     @Resource
-    private VehicleMapper vehicleMapper;
-    @Resource
-    private LumberyardService lumberyardService;
-    @Resource
-    private FurnitureFactoryService furnitureFactoryService;
+    private CarMapper carMapper;
 
 
     @Override
     public void createTask() {
-        List<Goods> unassignedGoods = goodsService.getUnassignedGoods();
-        if (unassignedGoods.isEmpty()) {
-            log.info("没有需要委托的货物");
-            return;
-        }
-        for (Goods goods : unassignedGoods) {
-            Task task = new Task();
-            task.setGoodsId(goods.getId());
-            task.setStartPoint(goods.getStartPoint());
-            task.setEndPoint(goods.getEndPoint());
-            task.setStatus("待分配");
-            taskMapper.insert(task);
-
-            goods.setStatus("已委托");
-            goodsService.updateById(goods);
-        }
+//        List<Goods> unassignedGoods = goodsService.getUnassignedGoods();
+//        if (unassignedGoods.isEmpty()) {
+//            log.info("没有需要委托的货物");
+//            return;
+//        }
+//        for (Goods goods : unassignedGoods) {
+//            Task task = new Task();
+//            task.setGoodsId(goods.getId());
+//            task.setStartPoint(goods.getStartPoint());
+//            task.setEndPoint(goods.getEndPoint());
+//            task.setStatus("待分配");
+//            taskMapper.insert(task);
+//
+//            goods.setStatus("已委托");
+//            goodsService.updateById(goods);
+//        }
     }
 
     /**
@@ -83,53 +77,55 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
      */
     @Override
     public void assignTask() {
-        List<Task> tasks = getUnassignedTasks();
-        List<Vehicle> vehicles = vehicleService.getUnassignedVehicles();
-
-        // 为每个委托寻找最近的空闲车辆
-        for (Task task : tasks) {
-            Vehicle nearestVehicle = null;
-            double minDistance = Double.MAX_VALUE;
-
-            for (Vehicle vehicle : vehicles) {
-                double distance = calculateDistance(lumberyardService.getLumberyardByName(task.getStartPoint()).getLongitude(),
-                        lumberyardService.getLumberyardByName(task.getStartPoint()).getLatitude(),
-                        vehicle.getLongitude(),
-                        vehicle.getLatitude());
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    nearestVehicle = vehicle;
-                }
-            }
-            // 分配委托
-            if (nearestVehicle != null) {
-                task.setVehicleId(nearestVehicle.getId());
-                task.setStatus("已分配");
-                nearestVehicle.setStatus("运输中");
-
-                // 更新委托和车辆信息
-                taskMapper.updateById(task);
-                vehicleMapper.updateById(nearestVehicle);
-
-                // 将车辆从空闲车辆列表中移除，防止重复分配
-                vehicles.remove(nearestVehicle);
-            }
-        }
+//        List<Task> tasks = getUnassignedTasks();
+//        List<Car> cars = vehicleService.getUnassignedCars();
+//
+//        // 为每个委托寻找最近的空闲车辆
+//        for (Task task : tasks) {
+//            Car nearestCar = null;
+//            double minDistance = Double.MAX_VALUE;
+//
+//            for (Car car : cars) {
+//                double distance = calculateDistance(lumberyardService.getLumberyardByName(task.getStartPoint()).getLongitude(),
+//                        lumberyardService.getLumberyardByName(task.getStartPoint()).getLatitude(),
+//                        car.getLongitude(),
+//                        car.getLatitude());
+//                if (distance < minDistance) {
+//                    minDistance = distance;
+//                    nearestCar = car;
+//                }
+//            }
+//            // 分配委托
+//            if (nearestCar != null) {
+//                task.setVehicleId(nearestCar.getId());
+//                task.setStatus("已分配");
+//                nearestCar.setStatus("运输中");
+//
+//                // 更新委托和车辆信息
+//                taskMapper.updateById(task);
+//                carMapper.updateById(nearestCar);
+//
+//                // 将车辆从空闲车辆列表中移除，防止重复分配
+//                cars.remove(nearestCar);
+//            }
+//        }
+        return;
     }
 
     @Override
     public TaskVO convertToTaskVO(Task task) {
-        TaskVO taskVO = new TaskVO();
-        BeanUtils.copyProperties(task, taskVO);
-
-        taskVO.setStartLongitude(lumberyardService.getLumberyardByName(task.getStartPoint()).getLongitude());
-        taskVO.setStartLatitude(lumberyardService.getLumberyardByName(task.getStartPoint()).getLatitude());
-        taskVO.setEndLongitude(furnitureFactoryService.getFurnitureFactoryByName(task.getEndPoint()).getLongitude());
-        taskVO.setEndLatitude(furnitureFactoryService.getFurnitureFactoryByName(task.getEndPoint()).getLatitude());
-        taskVO.setVehicleLongitude(vehicleService.getById(task.getVehicleId()).getLongitude());
-        taskVO.setVehicleLatitude(vehicleService.getById(task.getVehicleId()).getLatitude());
-
-        return taskVO;
+//        TaskVO taskVO = new TaskVO();
+//        BeanUtils.copyProperties(task, taskVO);
+//
+//        taskVO.setStartLongitude(lumberyardService.getLumberyardByName(task.getStartPoint()).getLongitude());
+//        taskVO.setStartLatitude(lumberyardService.getLumberyardByName(task.getStartPoint()).getLatitude());
+//        taskVO.setEndLongitude(furnitureFactoryService.getFurnitureFactoryByName(task.getEndPoint()).getLongitude());
+//        taskVO.setEndLatitude(furnitureFactoryService.getFurnitureFactoryByName(task.getEndPoint()).getLatitude());
+//        taskVO.setVehicleLongitude(vehicleService.getById(task.getVehicleId()).getLongitude());
+//        taskVO.setVehicleLatitude(vehicleService.getById(task.getVehicleId()).getLatitude());
+//
+//        return taskVO;
+        return null;
     }
 
     /**

@@ -4,7 +4,8 @@ import lombok.Data;
 
 @Data
 public class PoiSearchVO {
-    private Long id;
+    private String id;
+    private Long typeId;
 
     private String name;
     private String address;

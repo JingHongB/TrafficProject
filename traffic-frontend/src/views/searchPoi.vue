@@ -28,9 +28,9 @@ const exportTxt = () => {
     ElMessage.warning('没有数据可导出');
     return;
   }
-  let content = 'name,address,longitude,latitude\n';
+  let content = 'id,type_id,name,address,longitude,latitude\n';
   locations.value.forEach(location => {
-    content += `${location.name},${location.address},${location.longitude},${location.latitude}\n`;
+    content += `${location.id},${location.typeId},${location.name},${location.address},${location.longitude},${location.latitude}\n`;
   });
   const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
   const url = window.URL.createObjectURL(blob);
@@ -67,6 +67,7 @@ const exportTxt = () => {
       </el-header>
       <el-main>
         <el-table :data="locations" border style="width: 100%">
+          <el-table-column prop="id" label="ID" width="280"></el-table-column>
           <el-table-column prop="name" label="名称" width="280"></el-table-column>
           <el-table-column prop="address" label="地址" width="350"></el-table-column>
           <el-table-column prop="longitude" label="经度" width="150"></el-table-column>
