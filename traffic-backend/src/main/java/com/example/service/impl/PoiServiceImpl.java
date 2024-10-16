@@ -113,11 +113,10 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
                 try {
                     Poi entity = new Poi();
                     entity.setId(IdUtil.getSnowflakeNextId());
-                    QueryWrapper<PoiType> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.eq("name", keyword);
-                    //如果查询的类型存在，则设置类型ID
-                    if (poiTypeService.getOne(queryWrapper) != null) {
-                        entity.setTypeId(poiTypeService.getOne(queryWrapper).getId());
+                    PoiType poiType = poiTypeService.query().eq("name", keyword).one();
+                    // 如果数据库中存有该poi类型，则使用数据库中的id
+                    if (poiType != null) {
+                        entity.setTypeId(poiType.getId());
                     }
                     entity.setName(poi.getString("name"));
                     entity.setAddress(poi.getString("address"));
