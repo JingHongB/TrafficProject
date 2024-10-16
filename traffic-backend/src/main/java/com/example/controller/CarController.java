@@ -1,7 +1,6 @@
 package com.example.controller;
 
 import com.example.model.RestBean;
-import com.example.model.entity.Car;
 import com.example.model.vo.CarVO;
 import com.example.service.CarService;
 import io.swagger.v3.oas.annotations.Operation;
