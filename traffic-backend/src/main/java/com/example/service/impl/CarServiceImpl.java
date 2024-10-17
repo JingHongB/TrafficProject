@@ -80,7 +80,7 @@ public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements CarSe
     private CarVO convertToCarVO(Car car) {
         CarVO carVO = new CarVO();
         BeanUtils.copyProperties(car, carVO);
-
+        carVO.setId(String.valueOf(car.getId()));
         carVO.setTypeName(carTypeService.getById(car.getTypeId()).getName());
         carVO.setLoadCapacity(carTypeService.getById(car.getTypeId()).getLoadCapacity());
         return carVO;

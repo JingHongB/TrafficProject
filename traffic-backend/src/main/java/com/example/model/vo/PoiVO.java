@@ -4,9 +4,10 @@ import lombok.Data;
 
 @Data
 public class PoiVO {
-    private Long id;
+    private String id;
 
     private String typeName;
+    private String name;
     private String address;
     private Double longitude;
     private Double latitude;

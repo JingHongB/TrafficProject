@@ -121,6 +121,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     private TaskVO convertToTaskVO(Task task) {
         TaskVO taskVO = new TaskVO();
         BeanUtils.copyProperties(task, taskVO);
+        taskVO.setId(String.valueOf(task.getId()));
+        taskVO.setCarId(String.valueOf(task.getCarId()));
         taskVO.setGoods(goodsTypeService.getById(goodsService.getById(task.getGoodsId()).getTypeId()).getName());
         taskVO.setStartPoint(poiService.getById(task.getStartId()).getName());
         taskVO.setEndPoint(poiService.getById(task.getEndId()).getName());

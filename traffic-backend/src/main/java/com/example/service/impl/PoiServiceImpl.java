@@ -90,6 +90,7 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
         for (Poi poi : poiList) {
             PoiVO poiVO = new PoiVO();
             BeanUtils.copyProperties(poi, poiVO);
+            poiVO.setId(String.valueOf(poi.getId()));
             poiVO.setTypeName(poiTypeService.getById(poi.getTypeId()).getName());
             poiVOList.add(poiVO);
         }

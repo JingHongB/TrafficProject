@@ -45,7 +45,7 @@ public class CarController {
      * @return 所有车辆信息
      */
     @Operation(summary = "获取车辆")
-    @GetMapping
+    @GetMapping("/get")
     public RestBean<List<CarVO>> getAllVehicles() {
         try {
             return RestBean.success(carService.getCarVOList());

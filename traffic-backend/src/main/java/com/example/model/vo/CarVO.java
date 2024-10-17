@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CarVO {
-    private Long id;
+    private String id;
     private String typeName;
     private Double loadCapacity;
     private Double longitude;

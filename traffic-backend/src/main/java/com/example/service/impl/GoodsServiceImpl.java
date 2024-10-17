@@ -70,6 +70,7 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         goodsList.forEach(goods -> {
             GoodsVO goodsVO = new GoodsVO();
             BeanUtils.copyProperties(goods, goodsVO);
+            goodsVO.setId(String.valueOf(goods.getId()));
             goodsVO.setType(goodsTypeService.getById(goods.getTypeId()).getName());
             goodsVO.setOwner(poiService.getById(goods.getOwnerId()).getName());
             goodsVOList.add(goodsVO);

@@ -7,8 +7,8 @@ import {ElMessage} from "element-plus";
 let map = null;
 const goodsList = ref([]);
 const taskList = ref([]);
-let vehicleMarkers = [];
-let routePolylines = [];
+const carList = ref([]);
+let CarMarkers = [];
 
 //初始化地图
 onMounted(() => {
@@ -28,6 +28,7 @@ onMounted(() => {
           center: [104.066541, 30.572269], // 初始化地图中心点位置
         });
         loadPoiData(AMap);
+        loadCarData();
       })
       .catch((e) => {
         console.log(e);
@@ -41,10 +42,9 @@ onUnmounted(() => {
 
 // 向后端请求poi数据
 function loadPoiData(AMap) {
-  get("/api/poi/get", (response) => {
-    if (response) {
-      addMarkers(response.lumberyard, AMap, "./src/assets/lumberyard.png", "lumberyard");
-      addMarkers(response.furnitureFactory, AMap, "./src/assets/furnitureFactory.png", "furnitureFactory");
+  get("/api/poi/get", (data) => {
+    if (data) {
+      addMarkers(data, AMap);
     } else {
       ElMessage.error("获取到的数据为空");
     }
@@ -52,12 +52,7 @@ function loadPoiData(AMap) {
 }
 
 //绘制poi点
-function addMarkers(poiList, AMap, iconUrl, type) {
-  const icon = new AMap.Icon({
-    image: iconUrl,
-    size: new AMap.Size(30, 30), // 设置图标大小（宽度和高度，单位为像素）
-    imageSize: new AMap.Size(30, 30) // 设置图标的实际显示大小
-  });
+function addMarkers(poiList, AMap) {
   poiList.forEach((poi) => {
     if (poi.longitude && poi.latitude) {
       // 创建标记
@@ -65,28 +60,25 @@ function addMarkers(poiList, AMap, iconUrl, type) {
         position: [parseFloat(poi.longitude), parseFloat(poi.latitude)],
         map: map,
         title: poi.name,
-        icon: icon,
+        icon: new AMap.Icon({
+          image: getIconUrl(poi.typeName), // 动态获取不同类型的图标
+          size: new AMap.Size(30, 30), // 设置图标大小（宽度和高度，单位为像素）
+          imageSize: new AMap.Size(30, 30), // 设置图标的实际显示大小
+        }),
         offset: new AMap.Pixel(-15, -30), // 调整图标偏移量
       });
-      // 确定类型名称
-      let typeName;
-      switch (type) {
-        case "lumberyard":
-          typeName = "伐木场";
-          break;
-        case "furnitureFactory":
-          typeName = "家具厂";
-          break;
-      }
+
       // 为每个标记添加点击事件，显示信息窗口
       marker.on("click", () => {
         const infoWindow = new AMap.InfoWindow({
           //信息窗口显示内容
           content: `
             <div>
-              <h3>${poi.name}</h3>
+              <h3>地点信息</h3>
+              <p>名称: ${poi.name}</p>
               <p>地址: ${poi.address}</p>
-              <p>类型: ${typeName}</p>
+              <p>类型: ${poi.typeName}</p>
+              <p>状态: ${poi.status}</p>
             </div>
           `,
           offset: new AMap.Pixel(0, -30), // 调整信息窗口的偏移量
@@ -99,41 +91,80 @@ function addMarkers(poiList, AMap, iconUrl, type) {
   });
 }
 
-//初始化车辆
-function initializeVehicles() {
-  post("/api/vehicle/init", null, (response) => {
-    if (response) {
-      addVehicleMarkers(response);
-      ElMessage.success("车辆初始化成功");
-    } else {
-      ElMessage.error("车辆初始化失败");
-    }
+// 根据typeName获取不同类型的图标
+function getIconUrl(typeName) {
+  switch (typeName) {
+    case "伐木场":
+      return "./src/assets/lumberyard.png";
+    case "加工厂":
+      return "./src/assets/furnitureFactory.png";
+      // case "制造厂":
+      //   return "./src/assets/manufacturingFactory.png"; // 添加其他图标地址
+      // case "家具城":
+      //   return "./src/assets/furnitureStore.png"; // 添加其他图标地址
+    default:
+      return "./src/assets/defaultIcon.png"; // 默认图标
+  }
+}
+
+//刷新车辆
+function initializeCars() {
+  post("/api/car/init", null, () => {
+    ElMessage.success("车辆初始化成功");
+  });
+}
+
+// 向后端请求车辆数据
+function loadCarData() {
+  get("/api/car/get", (data) => {
+    data.forEach((car, index) => {
+      car.shortId = index + 1;
+    });
+    carList.value = data;
+    addVehicleMarkers(data);
   });
 }
 
 //绘制车辆点
-function addVehicleMarkers(vehicleList) {
+function addVehicleMarkers(CarList) {
   // 清除之前的车辆标记
-  vehicleMarkers.forEach((marker) => marker.setMap(null));
-  vehicleMarkers = [];
+  CarMarkers.forEach((marker) => marker.setMap(null));
+  CarMarkers = [];
 
   // 添加新的车辆标记
-  vehicleList.forEach((vehicle) => {
-    if (vehicle.longitude && vehicle.latitude) {
+  CarList.forEach((car) => {
+    if (car.longitude && car.latitude) {
       const marker = new AMap.Marker({
-        position: [parseFloat(vehicle.longitude), parseFloat(vehicle.latitude)], // 确保经纬度是数字类型
+        position: [parseFloat(car.longitude), parseFloat(car.latitude)], // 确保经纬度是数字类型
         map: map,
-        title: `${vehicle.id}`,
+        title: `${car.id}`,
         icon: new AMap.Icon({
-          image: "./src/assets/vehicle.png",
+          image: "./src/assets/car.png",
           size: new AMap.Size(30, 30),
           imageSize: new AMap.Size(30, 30),
         }),
         offset: new AMap.Pixel(-15, -30),
       });
-      vehicleMarkers.push(marker); // 保存车辆标记到数组中
+      marker.on("click", () => {
+        const infoWindow = new AMap.InfoWindow({
+          //信息窗口显示内容
+          content: `
+            <div>
+              <h3>车辆信息</h3>
+              <p>ID: ${car.shortId}</p>
+              <p>类型: ${car.typeName}</p>
+              <p>载重: ${car.loadCapacity}吨</p>
+              <p>状态: ${car.status}</p>
+            </div>
+          `,
+          offset: new AMap.Pixel(0, -30), // 调整信息窗口的偏移量
+        });
+        infoWindow.open(map, marker.getPosition());
+      });
+
+      CarMarkers.push(marker); // 保存车辆标记到数组中
     } else {
-      ElMessage.error(`车辆 ${vehicle.name} 的经纬度信息不完整`);
+      ElMessage.error(`车辆 ${car.name} 的经纬度信息不完整`);
     }
   });
 }
@@ -149,6 +180,9 @@ const createGoods = () => {
 //获取货物列表
 const getGoodsList = () => {
   get('/api/transport/goods', (data) => {
+        data.forEach((goods, index) => {
+          goods.shortId = index + 1;
+        });
         goodsList.value = data;
         ElMessage.success('成功获取货物列表');
       }
@@ -166,6 +200,16 @@ const createTask = () => {
 //获取任务列表
 const getTaskList = () => {
   get('/api/transport/task', (data) => {
+        data.forEach((task, index) => {
+          task.shortId = index + 1;
+        });
+        data.forEach((task) => {
+          carList.value.forEach((car) => {
+            if (task.carId === car.id) {
+              task.shortCarId = car.shortId;
+            }
+          });
+        });
         taskList.value = data;
         ElMessage.success('成功获取委托列表');
       }
@@ -184,7 +228,6 @@ function assignTask() {
 <template>
   <div id="container">
     <div class="button-container">
-      <el-button type="primary" @click="initializeVehicles">初始化车辆</el-button>
       <el-button type="primary" @click="createGoods">创建货物</el-button>
       <el-button type="success" @click="getGoodsList">获取货物列表</el-button>
       <el-button type="primary" @click="createTask">创建委托</el-button>
@@ -197,21 +240,32 @@ function assignTask() {
           <!-- 货物列表展示 -->
           <el-card v-if="goodsList.length" class="box-card" header="货物列表">
             <el-table :data="goodsList" style="width: 100%">
-              <el-table-column prop="id" label="ID" width="50"></el-table-column>
+              <el-table-column prop="shortId" label="ID" width="50"></el-table-column>
               <el-table-column prop="type" label="类型" width="150"></el-table-column>
-              <el-table-column prop="startPoint" label="起点" width="150"></el-table-column>
-              <el-table-column prop="endPoint" label="终点" width="150"></el-table-column>
+              <el-table-column prop="owner" label="货主" width="150"></el-table-column>
+              <el-table-column prop="weight" label="重量" width="150"></el-table-column>
               <el-table-column prop="status" label="状态" width="100"></el-table-column>
             </el-table>
           </el-card>
           <!-- 委托列表展示 -->
           <el-card v-if="taskList.length" class="box-card" header="委托列表">
             <el-table :data="taskList" style="width: 100%">
-              <el-table-column prop="id" label="ID" width="50"></el-table-column>
-              <el-table-column prop="goodsId" label="货物ID" width="100"></el-table-column>
-              <el-table-column prop="vehicleId" label="车辆ID" width="100"></el-table-column>
-              <el-table-column prop="startPoint" label="起始地点" width="150"></el-table-column>
-              <el-table-column prop="endPoint" label="目的地" width="150"></el-table-column>
+              <el-table-column prop="shortId" label="ID" width="50"></el-table-column>
+              <el-table-column prop="goods" label="货物" width="100"></el-table-column>
+              <el-table-column
+                  prop="CarId"
+                  label="车辆ID"
+                  width="100"
+                  :formatter="(row) => row.shortCarId ? row.shortCarId : '暂无'"
+              ></el-table-column>
+              <el-table-column prop="startPoint" label="起点" width="150"></el-table-column>
+              <el-table-column prop="endPoint" label="终点" width="150"></el-table-column>
+              <el-table-column
+                  prop="distance"
+                  label="距离"
+                  width="150"
+                  :formatter="(row) => row.distance ? `${row.distance} km` : '0 km'"
+              ></el-table-column>
               <el-table-column prop="status" label="状态" width="100"></el-table-column>
             </el-table>
           </el-card>

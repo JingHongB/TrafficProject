@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class GoodsVO {
-    private Long id;
+    private String id;
     private String type;
     private String owner;
     private Double weight;

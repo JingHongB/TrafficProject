@@ -6,3 +6,6 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+/.cache/.Apifox_Helper/.toolWindow.db
+/.cache/.Apifox_Helper/.toolWindow.sql
+/ApifoxUploaderProjectSetting.xml
