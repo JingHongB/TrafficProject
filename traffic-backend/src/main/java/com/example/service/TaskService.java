@@ -24,4 +24,9 @@ public interface TaskService extends IService<Task> {
      * @return TaskVO对象列表
      */
     List<TaskVO> convertToTaskVO(List<Task> tasks);
+
+    /**
+     * 清空所有委托
+     */
+    void clearAllTasks();
 }

@@ -19,4 +19,10 @@ public interface GoodsService extends IService<Goods> {
      * @return GoodsVO列表
      */
     List<GoodsVO> convertToVO(List<Goods> goodsList);
+
+
+    /**
+     * 清空所有货物
+     */
+    void clearAllGoods();
 }

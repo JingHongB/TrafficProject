@@ -1,6 +1,7 @@
 package com.example.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.GoodsMapper;
 import com.example.model.entity.Goods;
@@ -76,5 +77,13 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
             goodsVOList.add(goodsVO);
         });
         return goodsVOList;
+    }
+
+    /**
+     * 清空所有货物
+     */
+    @Override
+    public void clearAllGoods() {
+        this.remove(new QueryWrapper<>());
     }
 }

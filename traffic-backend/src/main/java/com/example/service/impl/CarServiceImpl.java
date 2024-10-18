@@ -37,7 +37,7 @@ public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements CarSe
         List<Car> cars = new ArrayList<>();
         Random random = new Random();
         //生成5辆车
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             Car car = new Car();
             car.setStatus("空闲");
             //雪花算法生成唯一ID

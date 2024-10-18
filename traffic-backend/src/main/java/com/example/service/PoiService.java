@@ -33,4 +33,9 @@ public interface PoiService extends IService<Poi> {
      * @return PoiVO列表
      */
     List<PoiVO> PoiConvertToPoiVO(List<Poi> poiList);
+
+    /**
+     * 重置所有工厂状态
+     */
+    void resetAllFactoryStatus();
 }

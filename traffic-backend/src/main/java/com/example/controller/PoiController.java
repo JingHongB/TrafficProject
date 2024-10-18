@@ -23,16 +23,21 @@ public class PoiController {
     private PoiService poiService;
 
     /**
-     * 处理搜索请求，根据前端传递的城市、关键词和页数，通过 poiService 执行搜索。
+     * 根据城市、关键词和页数，通过高德API进行搜索。
      *
-     * @param request 包含城市、关键词和页数的请求体
-     * @return 搜索结果封装在 RestBean 中
+     * @param city    搜索的城市
+     * @param keyword 搜索的关键词
+     * @param pageNum 页数
+     * @return 搜索结果
      */
     @Operation(summary = "搜索Poi")
-    @PostMapping("/search")
-    public RestBean<List<PoiSearchVO>> search(@RequestBody SearchRequestDTO request) {
+    @GetMapping("/search")
+    public RestBean<List<PoiSearchVO>> search(
+            @RequestParam String city,
+            @RequestParam String keyword,
+            @RequestParam int pageNum) {
         try {
-            List<Poi> pois = poiService.searchPoi(request.getCity(), request.getKeyword(), request.getPageNum());
+            List<Poi> pois = poiService.searchPoi(city, keyword, pageNum);
             return RestBean.success(poiService.PoiConvertToPoiSearchVO(pois));
         } catch (Exception e) {
             log.error("搜索Poi失败", e);

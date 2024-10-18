@@ -98,6 +98,14 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
     }
 
     /**
+     * 重置所有工厂状态
+     */
+    @Override
+    public void resetAllFactoryStatus() {
+        this.update().set("status", "缺货").ne("status", "缺货").update();
+    }
+
+    /**
      * 解析高德地图API的JSON响应，提取地点数据。
      *
      * @param jsonResponse 高德地图API的JSON响应

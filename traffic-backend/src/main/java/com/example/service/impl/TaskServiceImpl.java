@@ -1,6 +1,7 @@
 package com.example.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.TaskMapper;
 import com.example.model.entity.*;
@@ -110,6 +111,14 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             taskVOList.add(taskVO);
         }
         return taskVOList;
+    }
+
+    /**
+     * 清空所有委托
+     */
+    @Override
+    public void clearAllTasks() {
+        this.remove(new QueryWrapper<>());
     }
 
     /**
