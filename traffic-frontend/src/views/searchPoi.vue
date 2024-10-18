@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from 'vue';
 import {ElMessage} from 'element-plus';
-import {get, post} from '@/net/index.js';
+import {get} from '@/net/index.js';
 
 const city = ref('');
 const keyword = ref('');
