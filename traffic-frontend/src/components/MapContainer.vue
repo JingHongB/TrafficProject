@@ -1,14 +1,22 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from "vue";
+import {ref, onMounted, onUnmounted} from "vue";
 import AMapLoader from "@amap/amap-jsapi-loader";
 import {get, post} from "@/net/index.js";
-import {ElMessage} from "element-plus";
+import {ElMessage, ElButton, ElTable, ElTableColumn, ElTabs, ElTabPane, ElDivider, ElEmpty} from 'element-plus'
 
 let map = null;
 const goodsList = ref([]);
 const taskList = ref([]);
 const carList = ref([]);
+const poiList = ref([]);
 let CarMarkers = [];
+let PoiMarkers = [];
+const selectedPoiTypes = ref([]);  // 筛选的POI类型数组
+const poiTypes = ["林场", "加工厂", "制造厂", "家具城", "铁矿", "锻造厂", "板材厂", "五金店"]; // POI 类型列表
+
+
+const showLeftPanel = ref(true)
+const showRightPanel = ref(true)
 
 //初始化地图
 onMounted(() => {
@@ -21,7 +29,7 @@ onMounted(() => {
     plugins: ["AMap.Scale", "AMap.Driving", "AMap.MoveAnimation"], //需要使用的的插件列表，如比例尺'AMap.Scale'，支持添加多个如：['...','...']
   })
       .then((AMap) => {
-        map = new AMap.Map("container", {
+        map = new AMap.Map("map-container", {
           // 设置地图容器id
           viewMode: "3D", // 是否为3D地图模式
           zoom: 7, // 初始化地图级别
@@ -44,7 +52,8 @@ onUnmounted(() => {
 function loadPoiData(AMap) {
   get("/api/poi/get", (data) => {
     if (data) {
-      addMarkers(data, AMap);
+      poiList.value = data;
+      addMarkers(poiList.value, AMap);
     } else {
       ElMessage.error("获取到的数据为空");
     }
@@ -53,6 +62,10 @@ function loadPoiData(AMap) {
 
 //绘制poi点
 function addMarkers(poiList, AMap) {
+  // 清除之前的 POI 标记
+  PoiMarkers.forEach((marker) => marker.setMap(null));
+  PoiMarkers = [];
+
   poiList.forEach((poi) => {
     if (poi.longitude && poi.latitude) {
       // 创建标记
@@ -85,6 +98,7 @@ function addMarkers(poiList, AMap) {
         });
         infoWindow.open(map, marker.getPosition());
       });
+      PoiMarkers.push(marker); // 保存标记
     } else {
       ElMessage.error(`POI ${poi.name} 的经纬度信息不完整`);
     }
@@ -94,14 +108,22 @@ function addMarkers(poiList, AMap) {
 // 根据typeName获取不同类型的图标
 function getIconUrl(typeName) {
   switch (typeName) {
-    case "伐木场":
+    case "林场":
       return "./src/assets/lumberyard.png";
     case "加工厂":
       return "./src/assets/furnitureFactory.png";
-      // case "制造厂":
-      //   return "./src/assets/manufacturingFactory.png"; // 添加其他图标地址
-      // case "家具城":
-      //   return "./src/assets/furnitureStore.png"; // 添加其他图标地址
+    case "制造厂":
+      return "./src/assets/woodManufacturingPlant.png";
+    case "家具城":
+      return "./src/assets/furnitureCity.png";
+    case "铁矿":
+      return "./src/assets/steel.png";
+    case "锻造厂":
+      return "./src/assets/forgeFactory.png";
+    case "板材厂":
+      return "./src/assets/plateFactory.png";
+    case "五金店":
+      return "./src/assets/hardwareStores.png";
     default:
       return "./src/assets/defaultIcon.png"; // 默认图标
   }
@@ -172,84 +194,130 @@ function addVehicleMarkers(CarList) {
 //创建货物
 const createGoods = () => {
   post('/api/transport/goods/create', null, () => {
-        ElMessage.success('货物创建成功');
-      }
-  );
+    ElMessage.success('货物创建成功');
+    getGoodsList(); // 创建成功后刷新货物列表
+  });
 };
 
 //获取货物列表
 const getGoodsList = () => {
   get('/api/transport/goods', (data) => {
-        data.forEach((goods, index) => {
-          goods.shortId = index + 1;
-        });
-        goodsList.value = data;
-        ElMessage.success('成功获取货物列表');
-      }
-  );
+    data.forEach((goods, index) => {
+      goods.shortId = index + 1;
+    });
+    goodsList.value = data;
+    ElMessage.success('成功获取货物列表');
+  });
 };
 
 //创建任务
 const createTask = () => {
   post('/api/transport/task/create', null, () => {
-        ElMessage.success('委托创建成功');
-      }
-  );
+    ElMessage.success('委托创建成功');
+    getTaskList(); // 创建成功后刷新委托列表
+  });
 };
 
 //获取任务列表
 const getTaskList = () => {
   get('/api/transport/task', (data) => {
-        data.forEach((task, index) => {
-          task.shortId = index + 1;
-        });
-        data.forEach((task) => {
-          carList.value.forEach((car) => {
-            if (task.carId === car.id) {
-              task.shortCarId = car.shortId;
-            }
-          });
-        });
-        taskList.value = data;
-        ElMessage.success('成功获取委托列表');
-      }
-  );
+    data.forEach((task, index) => {
+      task.shortId = index + 1;
+    });
+    data.forEach((task) => {
+      carList.value.forEach((car) => {
+        if (task.carId === car.id) {
+          task.shortCarId = car.shortId;
+        }
+      });
+    });
+    taskList.value = data;
+    ElMessage.success('成功获取委托列表');
+  });
 };
 
 // 分配委托
 function assignTask() {
   post('/api/transport/assign', null, () => {
     ElMessage.success('委托分配成功');
+    getTaskList(); // 分配成功后刷新委托列表
   });
 }
+
+// 选择不同类型的 POI 点进行展示
+function filterPoiMarkers() {
+  const filteredPois = poiList.value.filter((poi) => {
+    return selectedPoiTypes.value.length === 0 || selectedPoiTypes.value.includes(poi.typeName);
+  });
+  addMarkers(filteredPois, AMap);
+}
+
+//初始化数据
+const resetData = () => {
+  post('/api/data/reset', null, () => {
+    ElMessage.success('数据初始化成功');
+  }, () => {
+    ElMessage.error('数据初始化失败');
+  });
+};
 
 </script>
 
 <template>
   <div id="container">
-    <div class="button-container">
-      <el-button type="primary" @click="createGoods">创建货物</el-button>
-      <el-button type="success" @click="getGoodsList">获取货物列表</el-button>
-      <el-button type="primary" @click="createTask">创建委托</el-button>
-      <el-button type="success" @click="getTaskList">获取委托列表</el-button>
-      <el-button type="success" @click="assignTask">分配委托</el-button>
+    <!-- 地图容器 -->
+    <div id="map-container"></div>
+
+    <!-- 左侧功能面板 -->
+    <div class="left-panel" :class="{ 'collapsed': !showLeftPanel }">
+      <el-button
+          class="panel-toggle left-toggle"
+          type="primary"
+          :icon="showLeftPanel ? 'el-icon-arrow-left' : 'el-icon-arrow-right'"
+          circle
+          @click="showLeftPanel = !showLeftPanel"
+      ></el-button>
+      <div v-show="showLeftPanel" class="panel-content">
+        <h2 class="text-xl font-bold mb-4">功能操作</h2>
+        <el-divider></el-divider>
+        <div class="button-container">
+          <el-button type="primary" @click="createGoods">创建货物</el-button>
+          <el-button type="success" @click="getGoodsList">获取货物列表</el-button>
+          <el-button type="primary" @click="createTask">创建委托</el-button>
+          <el-button type="success" @click="getTaskList">获取委托列表</el-button>
+          <el-button type="warning" @click="assignTask">分配委托</el-button>
+          <el-button type="info" @click="initializeCars">初始化车辆</el-button>
+          <el-button type="primary" @click="resetData">数据初始化</el-button>
+        </div>
+        <el-select v-model="selectedPoiTypes" multiple placeholder="请选择POI类型" @change="filterPoiMarkers">
+          <el-option v-for="type in poiTypes" :key="type" :label="type" :value="type"></el-option>
+        </el-select>
+      </div>
     </div>
-    <div>
-      <el-container class="fixed-sidebar">
-        <el-main>
-          <!-- 货物列表展示 -->
-          <el-card v-if="goodsList.length" class="box-card" header="货物列表">
-            <el-table :data="goodsList" style="width: 100%">
+
+    <!-- 右侧数据显示面板 -->
+    <div class="right-panel" :class="{ 'collapsed': !showRightPanel }">
+      <el-button
+          class="panel-toggle right-toggle"
+          type="primary"
+          :icon="showRightPanel ? 'el-icon-arrow-right' : 'el-icon-arrow-left'"
+          circle
+          @click="showRightPanel = !showRightPanel"
+      ></el-button>
+      <div v-show="showRightPanel" class="panel-content">
+        <el-tabs>
+          <el-tab-pane label="货物列表">
+            <el-table v-if="goodsList.length" :data="goodsList" style="width: 100%">
               <el-table-column prop="shortId" label="ID" width="50"></el-table-column>
               <el-table-column prop="type" label="类型" width="150"></el-table-column>
               <el-table-column prop="owner" label="货主" width="150"></el-table-column>
               <el-table-column prop="weight" label="重量" width="150"></el-table-column>
               <el-table-column prop="status" label="状态" width="100"></el-table-column>
             </el-table>
-          </el-card>
-          <!-- 委托列表展示 -->
-          <el-card v-if="taskList.length" class="box-card" header="委托列表">
-            <el-table :data="taskList" style="width: 100%">
+            <el-empty v-else description="暂无货物数据"></el-empty>
+          </el-tab-pane>
+          <el-tab-pane label="委托列表">
+            <el-table v-if="taskList.length" :data="taskList" style="width: 100%">
               <el-table-column prop="shortId" label="ID" width="50"></el-table-column>
               <el-table-column prop="goods" label="货物" width="100"></el-table-column>
               <el-table-column
@@ -268,45 +336,83 @@ function assignTask() {
               ></el-table-column>
               <el-table-column prop="status" label="状态" width="100"></el-table-column>
             </el-table>
-          </el-card>
-        </el-main>
-      </el-container>
+            <el-empty v-else description="暂无委托数据"></el-empty>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 #container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+}
+
+#map-container {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  width: 100%;
+  z-index: 1;
+}
+
+.left-panel, .right-panel {
+  position: absolute;
+  top: 0;
   height: 100%;
+  z-index: 2;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: width 0.3s ease; /* 只设置宽度的过渡 */
+  min-width: 60px; /* 设置最小宽度 */
+}
+
+.left-panel {
+  left: 0;
+  width: 250px;
+}
+
+.right-panel {
+  right: 0;
+  width: 300px;
+}
+
+
+.panel-content {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.panel-toggle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+}
+
+.left-toggle {
+  right: -20px;
+}
+
+.right-toggle {
+  left: -20px;
+}
+
+.collapsed {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .button-container {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.fixed-sidebar {
-  position: fixed; /* 使其固定位置 */
-  top: 20px; /* 距离页面顶部的距离，可以根据需要调整 */
-  right: 20px; /* 距离页面右侧的距离 */
-  width: 350px; /* 侧边栏的宽度 */
-  max-height: 90vh; /* 最大高度为视口高度的 90% */
-  overflow-y: auto; /* 当内容超出高度时，滚动显示 */
-  background: #fff; /* 背景颜色 */
-  padding: 10px; /* 内边距 */
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-  z-index: 1000; /* 确保侧边栏在最上层 */
 }
 
 </style>

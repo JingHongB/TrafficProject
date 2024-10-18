@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from 'vue';
 import {ElMessage} from 'element-plus';
-import {post} from '@/net/index.js';
+import {get, post} from '@/net/index.js';
 
 const city = ref('');
 const keyword = ref('');
@@ -14,7 +14,7 @@ const search = () => {
     return;
   }
 
-  post('/api/poi/search', {city: city.value, keyword: keyword.value, pageNum: pageNum.value}, (response) => {
+  get(`/api/poi/search?city=${city.value}&keyword=${keyword.value}&pageNum=${pageNum.value}`, (response) => {
     if (response) {
       locations.value = response;
     } else {
