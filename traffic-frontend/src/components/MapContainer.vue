@@ -37,6 +37,7 @@ onMounted(() => {
         });
         loadPoiData(AMap);
         loadCarData();
+        startPolling();
       })
       .catch((e) => {
         console.log(e);
@@ -261,6 +262,29 @@ const resetData = () => {
   });
 };
 
+function startPolling() {
+  setInterval(() => {
+    get(`/api/car/get`, (response) => {
+      if (response) {
+        updateVehicleMarker(response);
+      } else {
+        ElMessage.error("获取车辆位置失败");
+      }
+    });
+  }, 5000);
+}
+
+// 更新车辆的标记点位置
+function updateVehicleMarker(car) {
+  car.forEach((car) => {
+    const marker = CarMarkers.find(m => m.getTitle() === `${car.id}`);
+    if (marker) {
+      marker.setPosition([parseFloat(car.longitude), parseFloat(car.latitude)]);
+    }
+  });
+}
+
+
 </script>
 
 <template>
@@ -381,6 +405,7 @@ const resetData = () => {
 }
 
 .panel-content {
+  padding: 20px;
   height: 100%;
   overflow-y: auto;
 }
@@ -392,15 +417,12 @@ const resetData = () => {
 }
 
 .left-panel .panel-toggle {
-  right: 10px; /* 左侧面板的折叠按钮 */
-  top: 5px; /* 在面板的上方 */
+  left: 10px; /* 左侧面板的折叠按钮 */
 }
 
 .right-panel .panel-toggle {
   right: 10px; /* 右侧面板的折叠按钮 */
-  top: 5px; /* 在面板的上方 */
 }
-
 
 .left-panel.collapsed, .right-panel.collapsed {
   width: 0;
@@ -409,6 +431,10 @@ const resetData = () => {
   background-color: transparent;
 }
 
+.left-toggle, .right-toggle {
+  background-color: rgba(210, 8, 8, 0.9);
+  border: none;
+}
 
 .button-container {
   display: flex;

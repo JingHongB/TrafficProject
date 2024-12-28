@@ -43,16 +43,20 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
             PoiType poiType = poiTypeService.getById(poi.getTypeId());
             if (poiType != null && poiType.getFatherNode() == null) {
                 Goods goods = new Goods();
+                //生成货物ID
                 goods.setId(IdUtil.getSnowflakeNextId());
+                //生成货物类型ID
                 goods.setTypeId(poiType.getGoodsTypeId());
+                //生成货物所属工厂
                 goods.setOwnerId(poi.getId());
-                GoodsType goodsType = goodsTypeService.getById(goods.getTypeId());
                 //随机生成重量
+                GoodsType goodsType = goodsTypeService.getById(goods.getTypeId());
                 double weight = goodsType.getMinWeight() +
                         (goodsType.getMaxWeight() - goodsType.getMinWeight()) * random.nextDouble();
                 weight = Math.round(weight * 10.0) / 10.0;
                 goods.setWeight(weight);
                 save(goods);
+                //更新工厂状态(缺货 -> 有货)
                 poiService.update().set("status", "有货").eq("id", poi.getId()).update();
             }
         });

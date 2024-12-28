@@ -39,12 +39,9 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     @Override
     public void createTask() {
         List<Goods> unassignedGoods = goodsService.query().eq("status", "待委托").list();
-        if (unassignedGoods.isEmpty()) {
-            log.info("没有需要委托的货物");
-            return;
-        }
         for (Goods goods : unassignedGoods) {
             Task task = new Task();
+            //生成ID
             task.setId(IdUtil.getSnowflakeNextId());
             task.setGoodsId(goods.getId());
             task.setStartId(goods.getOwnerId());
@@ -55,10 +52,11 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             //根据起点和终点计算距离
             task.setDistance(calculateDistance(poiService.getById(task.getStartId()), poiService.getById(task.getEndId())));
             this.save(task);
+            //更新货物状态(待委托 -> 已委托)
             goods.setStatus("已委托");
             goodsService.updateById(goods);
         }
-        log.info("成功根据货物创建委托");
+        log.info("成功创建委托");
     }
 
     /**
@@ -75,6 +73,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             double minDistance = Double.MAX_VALUE;
 
             for (Car car : cars) {
+                //计算每辆车到起点的距离
                 double distance = calculateDistance(car, poiService.getById(task.getStartId()));
                 if (distance < minDistance) {
                     minDistance = distance;
@@ -84,8 +83,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             // 分配委托
             if (nearestCar != null) {
                 task.setCarId(nearestCar.getId());
-                task.setStatus("已分配");
-                nearestCar.setStatus("运输中");
+                // 更新委托状态(待接取 -> 待取货)
+                task.setStatus("待取货");
 
                 // 更新委托和车辆信息
                 this.updateById(task);

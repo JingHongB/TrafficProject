@@ -7,9 +7,4 @@ import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface CarMapper extends BaseMapper<Car> {
-    /**
-     * 截断车辆表
-     */
-    @Update("TRUNCATE TABLE car")
-    void truncate();
 }
