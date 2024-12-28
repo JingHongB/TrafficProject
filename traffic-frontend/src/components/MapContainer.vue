@@ -37,6 +37,7 @@ onMounted(() => {
         });
         loadPoiData(AMap);
         loadCarData();
+        startPolling();
       })
       .catch((e) => {
         console.log(e);
@@ -261,6 +262,29 @@ const resetData = () => {
   });
 };
 
+function startPolling() {
+  setInterval(() => {
+    get(`/api/car/get`, (response) => {
+      if (response) {
+        updateVehicleMarker(response);
+      } else {
+        ElMessage.error("获取车辆位置失败");
+      }
+    });
+  }, 5000);
+}
+
+// 更新车辆的标记点位置
+function updateVehicleMarker(car) {
+  car.forEach((car) => {
+    const marker = CarMarkers.find(m => m.getTitle() === `${car.id}`);
+    if (marker) {
+      marker.setPosition([parseFloat(car.longitude), parseFloat(car.latitude)]);
+    }
+  });
+}
+
+
 </script>
 
 <template>
@@ -309,9 +333,9 @@ const resetData = () => {
           <el-tab-pane label="货物列表">
             <el-table v-if="goodsList.length" :data="goodsList" style="width: 100%">
               <el-table-column prop="shortId" label="ID" width="50"></el-table-column>
-              <el-table-column prop="type" label="类型" width="150"></el-table-column>
+              <el-table-column prop="type" label="类型" width="80"></el-table-column>
               <el-table-column prop="owner" label="货主" width="150"></el-table-column>
-              <el-table-column prop="weight" label="重量" width="150"></el-table-column>
+              <el-table-column prop="weight" label="重量" width="100"></el-table-column>
               <el-table-column prop="status" label="状态" width="100"></el-table-column>
             </el-table>
             <el-empty v-else description="暂无货物数据"></el-empty>
@@ -319,19 +343,16 @@ const resetData = () => {
           <el-tab-pane label="委托列表">
             <el-table v-if="taskList.length" :data="taskList" style="width: 100%">
               <el-table-column prop="shortId" label="ID" width="50"></el-table-column>
-              <el-table-column prop="goods" label="货物" width="100"></el-table-column>
+              <el-table-column prop="goods" label="货物" width="70"></el-table-column>
               <el-table-column
-                  prop="CarId"
-                  label="车辆ID"
-                  width="100"
-                  :formatter="(row) => row.shortCarId ? row.shortCarId : '暂无'"
+                  prop="CarId" label="车辆ID" width="60" :formatter="(row) => row.shortCarId ? row.shortCarId : '暂无'"
               ></el-table-column>
               <el-table-column prop="startPoint" label="起点" width="150"></el-table-column>
               <el-table-column prop="endPoint" label="终点" width="150"></el-table-column>
               <el-table-column
                   prop="distance"
                   label="距离"
-                  width="150"
+                  width="80"
                   :formatter="(row) => row.distance ? `${row.distance} km` : '0 km'"
               ></el-table-column>
               <el-table-column prop="status" label="状态" width="100"></el-table-column>
@@ -345,6 +366,7 @@ const resetData = () => {
 </template>
 
 <style scoped>
+
 #container {
   position: relative;
   width: 100%;
@@ -366,9 +388,10 @@ const resetData = () => {
   top: 0;
   height: 100%;
   z-index: 2;
-  background-color: rgba(255, 255, 255, 0.9);
-  transition: width 0.3s ease; /* 只设置宽度的过渡 */
-  min-width: 60px; /* 设置最小宽度 */
+  background-color: rgb(255, 255, 255);
+  transition: width 0.3s ease;
+  min-width: 60px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .left-panel {
@@ -378,9 +401,8 @@ const resetData = () => {
 
 .right-panel {
   right: 0;
-  width: 300px;
+  width: 500px;
 }
-
 
 .panel-content {
   padding: 20px;
@@ -390,23 +412,28 @@ const resetData = () => {
 
 .panel-toggle {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 10px; /* 放置在面板的上方 */
   z-index: 3;
 }
 
-.left-toggle {
-  right: -20px;
+.left-panel .panel-toggle {
+  left: 10px; /* 左侧面板的折叠按钮 */
 }
 
-.right-toggle {
-  left: -20px;
+.right-panel .panel-toggle {
+  right: 10px; /* 右侧面板的折叠按钮 */
 }
 
-.collapsed {
+.left-panel.collapsed, .right-panel.collapsed {
   width: 0;
   padding: 0;
   overflow: hidden;
+  background-color: transparent;
+}
+
+.left-toggle, .right-toggle {
+  background-color: rgba(210, 8, 8, 0.9);
+  border: none;
 }
 
 .button-container {
@@ -414,5 +441,4 @@ const resetData = () => {
   flex-direction: column;
   gap: 10px;
 }
-
 </style>

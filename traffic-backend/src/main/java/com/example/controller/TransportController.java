@@ -28,6 +28,11 @@ public class TransportController {
     @Resource
     private GoodsService goodsService;
 
+    /**
+     * 获取所有委托信息
+     *
+     * @return 所有委托列表
+     */
     @Operation(summary = "获取委托")
     @GetMapping("/task")
     public RestBean<List<TaskVO>> getTaskList() {
@@ -40,6 +45,11 @@ public class TransportController {
         }
     }
 
+    /**
+     * 创建委托
+     *
+     * @return Void
+     */
     @Operation(summary = "创建委托")
     @PostMapping("/task/create")
     public RestBean<Void> createTask() {
@@ -52,6 +62,11 @@ public class TransportController {
         }
     }
 
+    /**
+     * 获取所有货物信息
+     *
+     * @return 所有货物列表
+     */
     @Operation(summary = "获取货物")
     @GetMapping("/goods")
     public RestBean<List<GoodsVO>> getGoodsList() {
@@ -64,6 +79,11 @@ public class TransportController {
         }
     }
 
+    /**
+     * 创建货物
+     *
+     * @return Void
+     */
     @Operation(summary = "创建货物")
     @PostMapping("/goods/create")
     public RestBean<Void> createGoods() {
@@ -76,6 +96,11 @@ public class TransportController {
         }
     }
 
+    /**
+     * 分配委托
+     *
+     * @return Void
+     */
     @Operation(summary = "分配委托")
     @PostMapping("/assign")
     public RestBean<Void> assignTask() {
@@ -85,6 +110,22 @@ public class TransportController {
         } catch (Exception e) {
             log.error("分配委托失败", e);
             return RestBean.failure(500, "分配委托失败");
+        }
+    }
+
+    /**
+     * 启动模拟运输
+     *
+     * @return Void
+     */
+    @Operation(summary = "启动模拟运输")
+    @PostMapping("/start")
+    public RestBean<Void> startProject() {
+        try {
+            return RestBean.success();
+        } catch (Exception e) {
+            log.error("开始运输失败", e);
+            return RestBean.failure(500, "开始运输失败");
         }
     }
 }
