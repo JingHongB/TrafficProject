@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.model.dto.PoiDTO;
 import com.example.model.entity.Poi;
 import com.example.model.vo.PoiSearchVO;
 import com.example.model.vo.PoiVO;
@@ -38,4 +39,20 @@ public interface PoiService extends IService<Poi> {
      * 重置所有工厂状态
      */
     void resetAllFactoryStatus();
+
+
+    /**
+     * 新增一个Poi
+     *
+     * @param poiDTO poiDTO
+     */
+    void addPoi(PoiDTO poiDTO);
+
+
+    /**
+     * 更新一个Poi
+     *
+     * @param poiDTO poiDTO
+     */
+    void updatePoi(PoiDTO poiDTO);
 }
