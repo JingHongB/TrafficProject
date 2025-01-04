@@ -51,7 +51,7 @@ onUnmounted(() => {
 
 // 向后端请求poi数据
 function loadPoiData(AMap) {
-  get("/api/poi/get", (data) => {
+  get("/api/poi/list", (data) => {
     if (data) {
       poiList.value = data;
       addMarkers(poiList.value, AMap);
@@ -139,7 +139,7 @@ function initializeCars() {
 
 // 向后端请求车辆数据
 function loadCarData() {
-  get("/api/car/get", (data) => {
+  get("/api/car/list", (data) => {
     data.forEach((car, index) => {
       car.shortId = index + 1;
     });
@@ -202,7 +202,7 @@ const createGoods = () => {
 
 //获取货物列表
 const getGoodsList = () => {
-  get('/api/transport/goods', (data) => {
+  get('/api/goods/list', (data) => {
     data.forEach((goods, index) => {
       goods.shortId = index + 1;
     });

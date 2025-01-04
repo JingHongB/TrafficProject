@@ -1,6 +1,8 @@
 package com.example.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.model.dto.AddCarDTO;
+import com.example.model.dto.EditCarDTO;
 import com.example.model.entity.Car;
 import com.example.model.vo.CarVO;
 
@@ -19,4 +21,24 @@ public interface CarService extends IService<Car> {
      * @return CarVO列表
      */
     List<CarVO> getCarVOList();
+
+    /**
+     * 删除Car
+     */
+    void deleteCar(Long id);
+
+    /**
+     * 新增一辆车
+     */
+    void addCar(AddCarDTO addCarDTO);
+
+    /**
+     * 更新一辆车
+     */
+    void updateCar(EditCarDTO editCarDTO);
+
+    /**
+     * 根据id获取车辆信息
+     */
+    CarVO getCarById(long id);
 }

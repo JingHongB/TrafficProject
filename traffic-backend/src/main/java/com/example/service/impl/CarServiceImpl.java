@@ -4,6 +4,8 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.CarMapper;
+import com.example.model.dto.AddCarDTO;
+import com.example.model.dto.EditCarDTO;
 import com.example.model.entity.Car;
 import com.example.model.vo.CarVO;
 import com.example.service.CarService;
@@ -72,6 +74,54 @@ public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements CarSe
         }
         return carVOS;
     }
+
+    /**
+     * zjm
+     * 删除某一车辆信息
+     */
+    @Override
+    public void deleteCar(Long id) {
+        removeById(id);
+    }
+
+    /**
+     * zjm
+     * 增加某一车辆信息
+     */
+    @Override
+    public void addCar(AddCarDTO addCarDTO) {
+        Car car = new Car();
+        car.setId(IdUtil.getSnowflakeNextId());
+        car.setTypeId(Long.valueOf(addCarDTO.getTypeId()));
+        car.setLongitude(addCarDTO.getLongitude());
+        car.setLatitude(addCarDTO.getLatitude());
+        car.setStatus("空闲");
+        save(car);
+    }
+
+    /**
+     * zjm
+     * 根据ID获取某一车辆信息
+     */
+    @Override
+    public CarVO getCarById(long id) {
+        return convertToCarVO(getById(id));
+    }
+
+    /**
+     * zjm
+     * 更新某一车辆信息
+     */
+    @Override
+    public void updateCar(EditCarDTO editCarDTO) {
+        Car car = new Car();
+        car.setId(editCarDTO.getId());
+        car.setTypeId(editCarDTO.getTypeId());
+        car.setLongitude(editCarDTO.getLongitude());
+        car.setLatitude(editCarDTO.getLatitude());
+        updateById(car);
+    }
+
 
     /**
      * 将Car转换为CarVO

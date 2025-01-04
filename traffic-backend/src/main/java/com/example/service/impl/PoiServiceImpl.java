@@ -6,6 +6,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.PoiMapper;
+import com.example.model.dto.PoiDTO;
 import com.example.model.entity.Poi;
 import com.example.model.entity.PoiType;
 import com.example.model.vo.PoiSearchVO;
@@ -104,6 +105,71 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
     public void resetAllFactoryStatus() {
         this.update().set("status", "缺货").ne("status", "缺货").update();
     }
+
+    /**
+     * 添加一个POI
+     *
+     * @param poiDTO 地点信息
+     */
+    @Override
+    public void addPoi(PoiDTO poiDTO) {
+        Poi poi = new Poi();
+        poi.setId(Long.parseLong(poiDTO.getId()));
+        poi.setTypeId(Long.parseLong(poiDTO.getTypeId()));
+        poi.setName(poiDTO.getName());
+        poi.setAddress(poiDTO.getAddress());
+        poi.setLongitude(Double.parseDouble(poiDTO.getLongitude()));
+        poi.setLatitude(Double.parseDouble(poiDTO.getLatitude()));
+        poi.setStatus(poiDTO.getStatus());
+        save(poi);
+    }
+
+    /**
+     * 更新一个POI
+     *
+     * @param poiDTO 地点信息
+     */
+    @Override
+    public void updatePoi(PoiDTO poiDTO) {
+        Poi poi = new Poi();
+        if (poiDTO.getId() != null) {
+            poi.setId(Long.parseLong(poiDTO.getId()));
+        } else {
+            poi.setId(0L); // 使用默认ID值
+        }
+        if (poiDTO.getTypeId() != null) {
+            poi.setTypeId(Long.parseLong(poiDTO.getTypeId()));
+        } else {
+            poi.setTypeId(0L); // 使用默认TypeID值
+        }
+        if (poiDTO.getName() != null) {
+            poi.setName(poiDTO.getName());
+        } else {
+            poi.setName(""); // 使用默认名称
+        }
+        if (poiDTO.getAddress() != null) {
+            poi.setAddress(poiDTO.getAddress());
+        } else {
+            poi.setAddress(""); // 使用默认地址
+        }
+        if (poiDTO.getLongitude() != null) {
+            poi.setLongitude(Double.parseDouble(poiDTO.getLongitude()));
+        } else {
+            poi.setLongitude(0.0); // 使用默认经度
+        }
+        if (poiDTO.getLatitude() != null) {
+            poi.setLatitude(Double.parseDouble(poiDTO.getLatitude()));
+        } else {
+            poi.setLatitude(0.0); // 使用默认纬度
+        }
+        if (poiDTO.getStatus() != null) {
+            poi.setStatus(poiDTO.getStatus());
+        } else {
+            poi.setStatus(""); // 使用默认状态
+        }
+        updateById(poi);
+    }
+
 
     /**
      * 解析高德地图API的JSON响应，提取地点数据。

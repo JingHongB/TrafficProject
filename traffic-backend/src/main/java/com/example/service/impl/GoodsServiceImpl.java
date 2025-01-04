@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.GoodsMapper;
+import com.example.model.dto.GoodsDTO;
 import com.example.model.entity.Goods;
 import com.example.model.entity.GoodsType;
 import com.example.model.entity.PoiType;
@@ -82,6 +83,41 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         });
         return goodsVOList;
     }
+    /**
+     * 将goods转换为GoodsVO
+     * @param goods 货物信息
+     * zjm
+     * @return GoodsVO
+     */
+    public GoodsVO convertToOneVO(Goods goods) {
+        GoodsVO goodsVO = new GoodsVO();
+        BeanUtils.copyProperties(goods, goodsVO);
+        goodsVO.setId(String.valueOf(goods.getId()));
+        goodsVO.setType(goodsTypeService.getById(goods.getTypeId()).getName());
+        goodsVO.setOwner(poiService.getById(goods.getOwnerId()).getName());
+        return goodsVO;
+    }
+
+    /**
+     * 更新货物信息
+     * @param goodsDTO 货物信息
+     * zjm
+     */
+    @Override
+    public void updateGood(GoodsDTO goodsDTO) {
+        Goods goods = new Goods();
+        // 设置 ID，默认值为 0L
+        goods.setId(goodsDTO.getId() != null ? Long.parseLong(goodsDTO.getId()) : 0L);
+        // 设置 TypeId，默认值为 0L
+        goods.setTypeId(goodsDTO.getTypeId() != null ? Long.parseLong(goodsDTO.getTypeId()) : 0L);
+        // 设置 OwnerId，默认值为 0L
+        goods.setOwnerId(goodsDTO.getOwnerId() != null ? Long.parseLong(goodsDTO.getOwnerId()) : 0L);
+        // 设置 Weight，默认值为 0.0
+        goods.setWeight(goodsDTO.getWeight() != null ? Double.parseDouble(String.valueOf(goodsDTO.getWeight())) : 0.0);
+        // 设置 Status，默认值为一个合理的默认状态，这里假设为 "inactive"
+        goods.setStatus(goodsDTO.getStatus() != null ? goodsDTO.getStatus() : "inactive");
+        updateById(goods);
+    }
 
     /**
      * 清空所有货物
@@ -89,5 +125,21 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
     @Override
     public void clearAllGoods() {
         this.remove(new QueryWrapper<>());
+    }
+
+    /**
+     * 新增一件货物
+     *
+     * @param goodsDTO 货物信息
+     */
+    @Override
+    public void addGood(GoodsDTO goodsDTO) {
+        Goods goods = new Goods();
+        goods.setId(Long.parseLong(goodsDTO.getId()));
+        goods.setTypeId(Long.parseLong(goodsDTO.getTypeId()));
+        goods.setOwnerId(Long.parseLong(goodsDTO.getOwnerId()));
+        goods.setWeight(Double.parseDouble(String.valueOf(goodsDTO.getWeight())));
+        goods.setStatus("待委托");
+        save(goods);
     }
 }

@@ -4,12 +4,14 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.TaskMapper;
+import com.example.model.dto.TaskDTO;
 import com.example.model.entity.*;
 import com.example.model.vo.TaskVO;
 import com.example.service.*;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     private CarService carService;
 
     private final Random random = new Random();
+    @Autowired
+    private CarTypeService carTypeService;
 
 
     /**
@@ -66,12 +70,10 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     public void assignTask() {
         List<Task> tasks = this.query().eq("status", "待接取").list();
         List<Car> cars = carService.query().eq("status", "空闲").list();
-
         // 为每个委托寻找最近的空闲车辆
         for (Task task : tasks) {
             Car nearestCar = null;
             double minDistance = Double.MAX_VALUE;
-
             for (Car car : cars) {
                 //计算每辆车到起点的距离
                 double distance = calculateDistance(car, poiService.getById(task.getStartId()));
@@ -85,11 +87,9 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                 task.setCarId(nearestCar.getId());
                 // 更新委托状态(待接取 -> 待取货)
                 task.setStatus("待取货");
-
                 // 更新委托和车辆信息
                 this.updateById(task);
                 carService.updateById(nearestCar);
-
                 // 将车辆从空闲车辆列表中移除，防止重复分配
                 cars.remove(nearestCar);
             }
@@ -120,6 +120,47 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         this.remove(new QueryWrapper<>());
     }
 
+    /**
+     * 新增一个委托
+     *zjm
+     * @param taskDTO 委托信息
+     */
+    @Override
+    public void addTask(TaskDTO taskDTO) {
+        Task task = new Task();
+        task.setId(Long.valueOf(taskDTO.getId()));
+        task.setCarId(Long.valueOf(taskDTO.getCarId()));
+        task.setGoodsId(Long.valueOf(taskDTO.getGoodsId()));
+        task.setStartId(Long.valueOf(taskDTO.getStartId()));
+        task.setEndId(Long.valueOf(taskDTO.getEndId()));
+        task.setDistance(taskDTO.getDistance());
+        task.setStatus(taskDTO.getStatus());
+        this.save(task);
+    }
+
+    /**
+     * 更新委托信息
+     *
+     * @param taskDTO 委托信息
+     */
+    @Override
+    public void updateTask(TaskDTO taskDTO) {
+        Task task = new Task();
+        if (taskDTO.getId() == null) {
+            throw new IllegalArgumentException("Task ID cannot be null");
+        }
+        task.setId(Long.valueOf(taskDTO.getId()));
+        // 非空判断并赋予默认值
+        task.setCarId(taskDTO.getCarId() != null ? Long.valueOf(taskDTO.getCarId()) : 0L);
+        task.setGoodsId(taskDTO.getGoodsId() != null ? Long.valueOf(taskDTO.getGoodsId()) : 0L);
+        task.setStartId(taskDTO.getStartId() != null ? Long.valueOf(taskDTO.getStartId()) : 0L);
+        task.setEndId(taskDTO.getEndId() != null ? Long.valueOf(taskDTO.getEndId()) : 0L);
+        task.setDistance(taskDTO.getDistance() != null ? taskDTO.getDistance() : 0.0);
+        task.setStatus(taskDTO.getStatus() != null ? taskDTO.getStatus() : null);
+        updateById(task);
+        //goodsService.updateById(goodsService.getById(task.getGoodsId()));
+        //carService.updateById(carService.getById(task.getCarId()));
+    }
     /**
      * 将Task对象转换为TaskVO对象
      *
