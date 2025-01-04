@@ -360,7 +360,6 @@ const getStatusType = (status) => {
           <el-table :data="poiList" style="width: 100%">
             <el-table-column prop="shortId" label="ID" width="180"/>
             <el-table-column prop="name" label="名称" width="120"/>
-            <el-table-column prop="address" label="地址" width="180"/>
             <el-table-column prop="typeName" label="类型" width="120"/>
             <el-table-column prop="longitude" label="经度" width="120"/>
             <el-table-column prop="latitude" label="纬度" width="120"/>
