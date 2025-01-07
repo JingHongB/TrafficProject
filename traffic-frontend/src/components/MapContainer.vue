@@ -67,6 +67,7 @@ function addVehicleMarkers(CarList) {
   });
 }
 
+
 let taskInterval = null; // 用于存储定时任务的引用
 const isTaskRunning = ref(false); // 标记定时任务是否正在运行
 // 向后端请求要进行路径规划的委托列表
