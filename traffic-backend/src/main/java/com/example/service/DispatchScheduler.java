@@ -12,13 +12,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DispatchScheduler {
     @Resource
-    private TransportService transportService;
-    @Resource
     private TaskService taskService;
-    @Resource
-    private CarService carService;
-    @Resource
-    private PoiService poiService;
     @Resource
     private GoodsService goodsService;
 
@@ -49,7 +43,6 @@ public class DispatchScheduler {
             goodsService.createGoods();
             taskService.createTask();
             taskService.assignTask();
-            transportService.getRoutes(taskService.query().ne("status", "待接取").list());
         } catch (Exception e) {
             log.error("调度失败", e);
         }

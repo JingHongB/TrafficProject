@@ -23,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -103,8 +104,20 @@ public class PoiServiceImpl extends ServiceImpl<PoiMapper, Poi> implements PoiSe
      */
     @Override
     public void resetAllFactoryStatus() {
-        this.update().set("status", "缺货").ne("status", "缺货").update();
+        this.update()
+                .set("status", "有货")
+                .in("type_id", Arrays.asList(1, 5))  // type_id 为 1 或 5 的工厂状态设置为 有货
+                .ne("status", "有货")  // 过滤掉已经是 "有货" 状态的记录
+                .update();  // 执行更新操作
+
+        // 对其他 type_id 的工厂状态修改为 "缺货"
+        this.update()
+                .set("status", "缺货")
+                .notIn("type_id", Arrays.asList(1, 5))  // type_id 不是 1 或 5 的工厂状态设置为 缺货
+                .ne("status", "缺货")  // 过滤掉已经是 "缺货" 状态的记录
+                .update();  // 执行更新操作
     }
+
 
     /**
      * 添加一个POI

@@ -9,6 +9,8 @@ import lombok.Data;
 public class TaskVO {
     private String id;
     private String CarId;
+    private String startPoiId;
+    private String endPoiId;
     private Double distance;
     private String status;
 

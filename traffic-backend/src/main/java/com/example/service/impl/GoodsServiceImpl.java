@@ -7,6 +7,7 @@ import com.example.mapper.GoodsMapper;
 import com.example.model.dto.GoodsDTO;
 import com.example.model.entity.Goods;
 import com.example.model.entity.GoodsType;
+import com.example.model.entity.Poi;
 import com.example.model.entity.PoiType;
 import com.example.model.vo.GoodsVO;
 import com.example.service.GoodsService;
@@ -19,6 +20,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -39,29 +41,52 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
      */
     @Override
     public void createGoods() {
-        //只在缺货的一级工厂生成货物
-        poiService.query().eq("status", "缺货").list().forEach(poi -> {
-            PoiType poiType = poiTypeService.getById(poi.getTypeId());
-            if (poiType != null && poiType.getFatherNode() == null) {
-                Goods goods = new Goods();
-                //生成货物ID
-                goods.setId(IdUtil.getSnowflakeNextId());
-                //生成货物类型ID
-                goods.setTypeId(poiType.getGoodsTypeId());
-                //生成货物所属工厂
-                goods.setOwnerId(poi.getId());
-                //随机生成重量
-                GoodsType goodsType = goodsTypeService.getById(goods.getTypeId());
-                double weight = goodsType.getMinWeight() +
-                        (goodsType.getMaxWeight() - goodsType.getMinWeight()) * random.nextDouble();
-                weight = Math.round(weight * 10.0) / 10.0;
-                goods.setWeight(weight);
-                save(goods);
-                //更新工厂状态(缺货 -> 有货)
-                poiService.update().set("status", "有货").eq("id", poi.getId()).update();
-            }
-        });
+        // 查询所有状态为"有货"的工厂
+        List<Poi> poiList = poiService.query().eq("status", "有货").list();
+
+        // 确保至少有两个"有货"的工厂
+        if (poiList.size() < 2) {
+            log.warn("没有足够的工厂，无法生成货物。");
+            return;  // 如果没有足够的工厂，直接返回
+        }
+
+        // 随机选择两个工厂
+        Collections.shuffle(poiList);  // 打乱列表顺序
+        Poi selectedPoi1 = poiList.get(0);  // 选择第一个工厂
+        Poi selectedPoi2 = poiList.get(1);  // 选择第二个工厂
+
+        // 创建货物并分别分配给这两个工厂
+        createGoodsForPoi(selectedPoi1);
+        createGoodsForPoi(selectedPoi2);
+
         log.info("成功生成货物");
+        log.info("成功生成货物");
+    }
+
+    /**
+     * 根据指定工厂创建货物
+     *
+     * @param poi 工厂信息
+     */
+    private void createGoodsForPoi(Poi poi) {
+        PoiType poiType = poiTypeService.getById(poi.getTypeId());
+        Goods goods = new Goods();
+        // 生成货物ID
+        goods.setId(IdUtil.getSnowflakeNextId());
+        // 生成货物类型ID
+        goods.setTypeId(poiType.getGoodsTypeId());
+        // 生成货物所属工厂
+        goods.setOwnerId(poi.getId());
+        // 随机生成重量
+        GoodsType goodsType = goodsTypeService.getById(goods.getTypeId());
+        double weight = goodsType.getMinWeight() +
+                (goodsType.getMaxWeight() - goodsType.getMinWeight()) * random.nextDouble();
+        weight = Math.round(weight * 10.0) / 10.0;
+        goods.setWeight(weight);
+        save(goods);
+        // 更新工厂状态(有货->缺货)
+        poiService.update().set("status", "缺货").eq("id", poi.getId()).update();
+
     }
 
     /**
@@ -83,10 +108,12 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         });
         return goodsVOList;
     }
+
     /**
      * 将goods转换为GoodsVO
+     *
      * @param goods 货物信息
-     * zjm
+     *              zjm
      * @return GoodsVO
      */
     public GoodsVO convertToOneVO(Goods goods) {
@@ -100,8 +127,9 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
 
     /**
      * 更新货物信息
+     *
      * @param goodsDTO 货物信息
-     * zjm
+     *                 zjm
      */
     @Override
     public void updateGood(GoodsDTO goodsDTO) {

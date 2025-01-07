@@ -44,4 +44,18 @@ public interface TaskService extends IService<Task> {
      * @param taskDTO 任务数据传输对象
      */
     void updateTask(TaskDTO taskDTO);
+
+    /**
+     * 获取所有未规划的任务
+     *
+     * @return 未规划的任务列表
+     */
+    List<Task> getUnplannedTasks();
+
+    /**
+     * 更新任务状态2
+     *
+     * @param id 任务id
+     */
+    void updateTaskStatus(long id);
 }

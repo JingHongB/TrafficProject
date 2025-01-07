@@ -21,6 +21,31 @@ public class TaskController {
     @Resource
     private TaskService taskService;
 
+    @Operation(summary = "获取要进行路径规划的委托")
+    @GetMapping("/getUnplanned")
+    public RestBean<List<TaskVO>> getUnplannedTasks() {
+        try {
+            List<Task> tasks = taskService.getUnplannedTasks();
+            return RestBean.success(taskService.convertToTaskVO(tasks));
+        } catch (Exception e) {
+            log.error("获取要进行路径规划的委托失败", e);
+            return RestBean.failure(500, "获取要进行路径规划的委托失败");
+        }
+    }
+
+    @Operation(summary = "更新委托状态")
+    @PostMapping("/updateStatus")
+    public RestBean<Void> updateTaskStatus(@RequestParam long taskId) {
+        try {
+            taskService.updateTaskStatus(taskId);
+            return RestBean.success();
+        } catch (Exception e) {
+            log.error("更新委托状态失败", e);
+            return RestBean.failure(500, "更新委托状态失败");
+        }
+    }
+
+
     /**
      * 创建委托
      *
@@ -107,8 +132,10 @@ public class TaskController {
             return RestBean.failure(500, "新增委托失败");
         }
     }
+
     /**
      * 根据id查询委托
+     *
      * @param id 委托id
      * @return 任务信息
      */
@@ -126,6 +153,7 @@ public class TaskController {
 
     /**
      * 更新委托
+     *
      * @param taskDTO 委托信息
      * @return Void
      */

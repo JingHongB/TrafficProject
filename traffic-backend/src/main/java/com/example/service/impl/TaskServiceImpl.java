@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -70,31 +72,39 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     public void assignTask() {
         List<Task> tasks = this.query().eq("status", "待接取").list();
         List<Car> cars = carService.query().eq("status", "空闲").list();
+
         // 为每个委托寻找最近的空闲车辆
         for (Task task : tasks) {
             Car nearestCar = null;
             double minDistance = Double.MAX_VALUE;
+
             for (Car car : cars) {
-                //计算每辆车到起点的距离
+                // 计算每辆车到起点的距离
                 double distance = calculateDistance(car, poiService.getById(task.getStartId()));
                 if (distance < minDistance) {
                     minDistance = distance;
                     nearestCar = car;
                 }
             }
+
             // 分配委托
             if (nearestCar != null) {
                 task.setCarId(nearestCar.getId());
                 // 更新委托状态(待接取 -> 待取货)
                 task.setStatus("待取货");
-                // 更新委托和车辆信息
+                // 更新委托信息
                 this.updateById(task);
+
+                // 更新车辆状态为“取货中”
+                nearestCar.setStatus("取货中");
                 carService.updateById(nearestCar);
+
                 // 将车辆从空闲车辆列表中移除，防止重复分配
                 cars.remove(nearestCar);
             }
         }
     }
+
 
     /**
      * 将Task对象列表转换为TaskVO对象列表
@@ -122,7 +132,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
 
     /**
      * 新增一个委托
-     *zjm
+     * zjm
+     *
      * @param taskDTO 委托信息
      */
     @Override
@@ -161,6 +172,81 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         //goodsService.updateById(goodsService.getById(task.getGoodsId()));
         //carService.updateById(carService.getById(task.getCarId()));
     }
+
+    @Override
+    public List<Task> getUnplannedTasks() {
+        // 获取状态为 "待取货" 的任务列表
+        List<Task> pickupTasks = this.query().eq("status", "待取货").list();
+
+        // 更新状态为 "取货中"
+        if (!pickupTasks.isEmpty()) {
+            List<Long> pickupTaskIds = pickupTasks.stream().map(Task::getId).collect(Collectors.toList());
+            this.update().set("status", "取货中").in("id", pickupTaskIds).update();
+        }
+
+        // 获取状态为 "待运货" 的任务列表
+        List<Task> deliveryTasks = this.query().eq("status", "待运货").list();
+
+        // 更新状态为 "运货中"
+        if (!deliveryTasks.isEmpty()) {
+            List<Long> deliveryTaskIds = deliveryTasks.stream().map(Task::getId).collect(Collectors.toList());
+            this.update().set("status", "运货中").in("id", deliveryTaskIds).update();
+        }
+
+        // 合并两个列表并返回
+        List<Task> result = new ArrayList<>();
+        result.addAll(pickupTasks);
+        result.addAll(deliveryTasks);
+        return result;
+    }
+
+    @Override
+    public void updateTaskStatus(long id) {
+        //获取委托信息
+        Task task = this.getById(id);
+        //获取车辆信息
+        Car car = carService.getById(task.getCarId());
+        // 处理取货中的委托
+        if ("取货中".equals(task.getStatus())) {
+            // 更新车辆状态为“运货中”
+            car.setStatus("运货中");
+            // 更新车辆位置为委托的起点位置
+            Poi startPoi = poiService.getById(task.getStartId());
+            if (startPoi != null) {
+                car.setLongitude(startPoi.getLongitude());
+                car.setLatitude(startPoi.getLatitude());
+            }
+            carService.updateById(car);
+
+            // 更新委托状态为“待运货”
+            task.setStatus("待运货");
+            this.updateById(task);
+
+            // 处理运货中的委托
+        } else if ("运货中".equals(task.getStatus())) {
+            // 更新车辆状态为“空闲”
+            car.setStatus("空闲");
+            // 更新车辆位置为委托的终点位置
+            Poi endPoi = poiService.getById(task.getEndId());
+            if (endPoi != null) {
+                car.setLongitude(endPoi.getLongitude());
+                car.setLatitude(endPoi.getLatitude());
+            }
+            carService.updateById(car);
+
+            // 更新委托状态为“已完成”
+            task.setStatus("已完成");
+            this.updateById(task);
+//            this.removeById(id);
+
+            // 更新终点POI状态为“有货”
+            if (endPoi != null) {
+                endPoi.setStatus("有货");
+                poiService.updateById(endPoi);
+            }
+        }
+    }
+
     /**
      * 将Task对象转换为TaskVO对象
      *
@@ -179,6 +265,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         taskVO.setStartLatitude(poiService.getById(task.getStartId()).getLatitude());
         taskVO.setEndLongitude(poiService.getById(task.getEndId()).getLongitude());
         taskVO.setEndLatitude(poiService.getById(task.getEndId()).getLatitude());
+        taskVO.setStartPoiId(String.valueOf(task.getStartId()));
+        taskVO.setEndPoiId(String.valueOf(task.getEndId()));
         Car car = carService.getById(task.getCarId());
         if (car != null) {
             taskVO.setCarLongitude(car.getLongitude());
