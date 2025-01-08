@@ -32,33 +32,43 @@ public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements CarSe
     @Override
     @Transactional
     public void initializeCars() {
-        //清空车辆表
+        // 清空车辆表
         this.remove(new QueryWrapper<>());
-        //获取车辆类型数量
+        // 获取车辆类型数量
         long carTypeCount = carTypeService.count();
         List<Car> cars = new ArrayList<>();
-        Random random = new Random();
-        //生成5辆车
+        // 定义固定的经纬度列表
+        double[][] fixedCoordinates = {
+                {105.861421, 31.237891},
+                {105.780149, 29.564601},
+                {105.377113, 29.938592},
+                {103.540676, 29.683982},
+                {106.931531, 30.326487},
+                {106.249492, 29.993729},
+                {102.773426, 30.050461},
+                {104.855035, 29.775579},
+                {103.540676, 29.683982},
+                {106.931531, 30.326487}
+        };
+
+        // 生成10辆车
         for (int i = 0; i < 10; i++) {
             Car car = new Car();
             car.setStatus("空闲");
-            //雪花算法生成唯一ID
+            // 雪花算法生成唯一ID
             car.setId(IdUtil.getSnowflakeNextId());
-            //随机生成车辆类型
-            car.setTypeId(random.nextLong(carTypeCount) + 1);
-            //车辆大致生成在四川省境内
-            //生成车辆经度和纬度，并控制精度为小数点后六位
-            double longitude = 103.47 + (106.45 - 103.47) * random.nextDouble();
-            double latitude = 28.66 + (31.61 - 28.66) * random.nextDouble();
-            // 控制经纬度的精度
-            car.setLongitude(Math.round(longitude * 1_000_000) / 1_000_000.0);
-            car.setLatitude(Math.round(latitude * 1_000_000) / 1_000_000.0);
+            // 随机生成车辆类型
+            car.setTypeId(new Random().nextLong(carTypeCount) + 1);
+            // 设置固定的经纬度
+            car.setLongitude(fixedCoordinates[i][0]);
+            car.setLatitude(fixedCoordinates[i][1]);
             cars.add(car);
         }
-        //插入数据
+        // 插入数据
         this.saveBatch(cars);
         log.info("车辆信息初始化完成");
     }
+
 
     /**
      * 获取CarVO列表
