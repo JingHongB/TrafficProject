@@ -11,6 +11,7 @@ const carList = ref([]);
 const poiList = ref([]);
 let CarMarkers = [];
 let PoiMarkers = [];
+
 const selectedPoiTypes = ref([]);  // 筛选的POI类型数组
 const poiTypes = ["林场", "加工厂", "制造厂", "家具城", "铁矿", "锻造厂", "板材厂", "五金店"]; // POI 类型列表
 
@@ -19,10 +20,7 @@ const showLeftPanel = ref(true)
 
 const router = useRouter()  // 用于路由跳转
 
-const selectedCarId = ref(null); // 用户选择的车辆 ID
-const selectedPoiId = ref(null); // 用户选择的 POI ID
-
-//绘制车辆点
+//统一绘制车辆点
 function addVehicleMarkers(CarList) {
   // 清除之前的车辆标记
   CarMarkers.forEach((marker) => marker.setMap(null));
@@ -32,7 +30,6 @@ function addVehicleMarkers(CarList) {
   CarList.forEach((car) => {
     if (car.longitude && car.latitude) {
       const marker = new AMap.Marker({
-        //position: [parseFloat(car.longitude), parseFloat(car.latitude)], // 确保经纬度是数字类型
         position: [parseFloat(car.longitude), parseFloat(car.latitude)],
         map: map,
         title: `${car.id}`,
@@ -77,9 +74,9 @@ function fetchTaskList() {
       taskList.value = data;
       data.forEach((task) => {
         if (task.status === '待取货') {
-          moveCarToPoi(task.carId, task.startPoiId, task.id, '待运货');
+          moveCarToPoi(task.carId, task.startPoiId, task.id);
         } else if (task.status === '待运货') {
-          moveCarToPoi(task.carId, task.endPoiId, task.id, '已完成');
+          moveCarToPoi(task.carId, task.endPoiId, task.id);
         }
       });
     } else {
@@ -91,7 +88,16 @@ function fetchTaskList() {
 // 路径规划结束后更新委托状态
 function updateTaskStatus(taskId) {
   post(`/api/task/updateStatus?taskId=${taskId}`, null, () => {
-    // 成功后的回调
+  });
+}
+
+function startProject() {
+  post('/api/transport/start', null, () => {
+  });
+}
+
+function stopProject() {
+  post('/api/transport/stop', null, () => {
   });
 }
 
@@ -102,10 +108,14 @@ function startTaskInterval() {
     return;
   }
   isTaskRunning.value = true;
+  //启动后端仿真循环
+  startProject();
   // 立即请求一次数据
-  fetchTaskList();
+  setTimeout(() => {
+    fetchTaskList();
+  }, 100); // 延迟 200 毫秒
   // 设置定时任务
-  taskInterval = setInterval(fetchTaskList, 5000);
+  taskInterval = setInterval(fetchTaskList, 2000);
   ElMessage.success("定时任务已启动！");
 }
 
@@ -118,20 +128,12 @@ function stopTaskInterval() {
   isTaskRunning.value = false;
   clearInterval(taskInterval);
   taskInterval = null;
+  stopProject();
   ElMessage.success("定时任务已停止！");
 }
 
-// 调用车辆移动方法
-function moveSelectedCar() {
-  if (selectedCarId.value && selectedPoiId.value) {
-    moveCarToPoi(selectedCarId.value, selectedPoiId.value);
-  } else {
-    ElMessage.warning("请先选择车辆和目标 POI");
-  }
-}
-
 // 车辆移动到指定POI点的函数
-function moveCarToPoi(carId, poiId, taskId, nextStatus) {
+function moveCarToPoi(carId, poiId, taskId) {
   const car = carList.value.find(car => car.id === carId);
   const poi = poiList.value.find(poi => poi.id === poiId);
 
@@ -142,7 +144,7 @@ function moveCarToPoi(carId, poiId, taskId, nextStatus) {
     // 获取路径规划信息
     getRoad(AMap, map, startLngLat, endLngLat).then(result => {
       const AtRoad = pathToAt(result.routes[0].steps);
-      ReRoad(AMap, map, AtRoad, car, false, taskId, nextStatus);
+      ReRoad(AMap, map, AtRoad, car, false, taskId);
     }).catch(error => {
       ElMessage.error("路径规划失败：" + error.message);
     });
@@ -182,8 +184,8 @@ function pathToAt(steps) {
 }
 
 // 调用高德API进行轨迹回放，并动态更新显示的路线
-function ReRoad(AMap, map, AtRoad, car, isGoods, taskId, nextStatus) {
-  return new Promise((resolve, reject) => {
+function ReRoad(AMap, map, AtRoad, car, isGoods, taskId) {
+  return new Promise((resolve) => {
     const marker = new AMap.Marker({
       map: map,
       position: AtRoad[0],
@@ -221,14 +223,7 @@ function ReRoad(AMap, map, AtRoad, car, isGoods, taskId, nextStatus) {
       strokeWeight: 6,
     });
 
-    /*var passedPolyline = new AMap.Polyline({
-      map: map,
-      strokeColor: "#AF5",
-      strokeWeight: 6,
-    });*/
-
     marker.on('moving', function (e) {
-      //passedPolyline.setPath(e.passedPath);
       // 更新显示的路线为从当前车辆位置到终点的路线
       polyline.setPath(AtRoad.slice(e.passedPath.length));
     });
@@ -275,7 +270,6 @@ function fetchUpdatedCarInfo(carId) {
     }
   });
 }
-
 
 //初始化地图
 onMounted(() => {
@@ -391,7 +385,6 @@ function getIconUrl(typeName) {
   }
 }
 
-
 // 向后端请求车辆数据
 function loadCarData() {
   get("/api/car/list", (data) => {
@@ -402,7 +395,6 @@ function loadCarData() {
     addVehicleMarkers(carList.value);
   });
 }
-
 
 // 选择不同类型的 POI 点进行展示
 function filterPoiMarkers() {
@@ -463,14 +455,6 @@ function removeVehicleMarker(carId) {
           <el-button type="primary" @click="resetData">数据初始化</el-button>
           <el-button type="info" @click="goToAdminPage">前往管理页面</el-button>
           <div class="move-container">
-            <h3 class="text-lg font-bold mb-2">车辆移动</h3>
-            <el-select v-model="selectedCarId" placeholder="选择车辆">
-              <el-option v-for="car in carList" :key="car.id" :label="`车辆 ${car.id}`" :value="car.id"></el-option>
-            </el-select>
-            <el-select v-model="selectedPoiId" placeholder="选择目标 POI">
-              <el-option v-for="poi in poiList" :key="poi.id" :label="poi.name" :value="poi.id"></el-option>
-            </el-select>
-            <el-button type="primary" @click="moveSelectedCar">开始移动</el-button>
             <div>
               <el-button type="primary" @click="startTaskInterval" v-if="!isTaskRunning">
                 启动定时任务
