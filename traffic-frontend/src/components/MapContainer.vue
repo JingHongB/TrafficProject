@@ -246,6 +246,10 @@ function ReRoad(AMap, map, AtRoad, car, isGoods, taskId, nextStatus) {
         // 标记移动结束，调用函数
         CarMarkers.push({id: car.id, marker});
         updateTaskStatus(taskId);
+
+        setTimeout(() => {
+          fetchUpdatedCarInfo(car.id);
+        }, 200); // 延迟 200 毫秒
       }
     });
     removeVehicleMarker(car.id);
@@ -253,6 +257,25 @@ function ReRoad(AMap, map, AtRoad, car, isGoods, taskId, nextStatus) {
     resolve("动画播放完成");
   });
 }
+
+// 请求后端获取单个车辆信息并更新carList
+function fetchUpdatedCarInfo(carId) {
+  get(`/api/car/get/${carId}`, (data) => {
+    if (data) {
+      // 更新carList中的车辆信息
+      const index = carList.value.findIndex(car => car.id === carId);
+      if (index !== -1) {
+        carList.value[index] = {...carList.value[index], ...data};
+        ElMessage.success(`车辆 ${carId} 信息已更新`);
+      } else {
+        ElMessage.warning(`未找到车辆 ${carId} 的记录`);
+      }
+    } else {
+      ElMessage.error(`未能获取车辆 ${carId} 的更新信息`);
+    }
+  });
+}
+
 
 //初始化地图
 onMounted(() => {

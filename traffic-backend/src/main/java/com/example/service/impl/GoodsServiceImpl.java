@@ -43,23 +43,17 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
     public void createGoods() {
         // 查询所有状态为"有货"的工厂
         List<Poi> poiList = poiService.query().eq("status", "有货").list();
-
-        // 确保至少有两个"有货"的工厂
-        if (poiList.size() < 2) {
-            log.warn("没有足够的工厂，无法生成货物。");
-            return;  // 如果没有足够的工厂，直接返回
+        if (poiList.isEmpty()) {
+            log.info("工厂数量不足，无法生成货物");
+            return;
         }
-
-        // 随机选择两个工厂
+        // 随机选择工厂
         Collections.shuffle(poiList);  // 打乱列表顺序
         Poi selectedPoi1 = poiList.get(0);  // 选择第一个工厂
-        Poi selectedPoi2 = poiList.get(1);  // 选择第二个工厂
 
         // 创建货物并分别分配给这两个工厂
         createGoodsForPoi(selectedPoi1);
-        createGoodsForPoi(selectedPoi2);
 
-        log.info("成功生成货物");
         log.info("成功生成货物");
     }
 

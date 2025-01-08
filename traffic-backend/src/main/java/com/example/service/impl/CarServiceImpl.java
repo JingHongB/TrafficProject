@@ -48,8 +48,8 @@ public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements CarSe
             car.setTypeId(random.nextLong(carTypeCount) + 1);
             //车辆大致生成在四川省境内
             //生成车辆经度和纬度，并控制精度为小数点后六位
-            double longitude = 97.35 + (108.54 - 97.35) * random.nextDouble();
-            double latitude = 26.05 + (34.31 - 26.05) * random.nextDouble();
+            double longitude = 103.47 + (106.45 - 103.47) * random.nextDouble();
+            double latitude = 28.66 + (31.61 - 28.66) * random.nextDouble();
             // 控制经纬度的精度
             car.setLongitude(Math.round(longitude * 1_000_000) / 1_000_000.0);
             car.setLatitude(Math.round(latitude * 1_000_000) / 1_000_000.0);
